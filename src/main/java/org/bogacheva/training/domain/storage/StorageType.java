@@ -1,6 +1,6 @@
-package org.bogacheva.training.domain.storages;
+package org.bogacheva.training.domain.storage;
 
-import org.bogacheva.training.domain.storages.strategies.*;
+import org.bogacheva.training.service.storage.strategies.*;
 
 public enum StorageType {
     RESIDENCE(new ResidenceStrategy()),

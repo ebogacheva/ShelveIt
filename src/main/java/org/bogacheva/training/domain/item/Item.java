@@ -1,25 +1,23 @@
 package org.bogacheva.training.domain.item;
 
-import org.bogacheva.training.domain.storages.Storage;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.bogacheva.training.domain.storage.Storage;
 
+@Setter
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Item {
-    private final String name;
+
+    private Long id;
+    private String name;
     private Storage storage;
 
     public Item(String name, Storage storage) {
         this.name = name;
-        this.storage = storage;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Storage getStorage() {
-        return storage;
-    }
-
-    public void setStorage(Storage storage) {
         this.storage = storage;
     }
 }

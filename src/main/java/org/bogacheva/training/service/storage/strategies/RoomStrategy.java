@@ -1,6 +1,6 @@
-package org.bogacheva.training.domain.storages.strategies;
+package org.bogacheva.training.service.storage.strategies;
 
-import org.bogacheva.training.domain.storages.StorageType;
+import org.bogacheva.training.domain.storage.StorageType;
 
 import java.util.EnumSet;
 
@@ -12,5 +12,10 @@ public class RoomStrategy implements StorageTypeStrategy {
     @Override
     public boolean canContain(StorageType type) {
         return ALLOWED_TYPES.contains(type);
+    }
+
+    @Override
+    public boolean canHaveParent() {
+        return true;
     }
 }
