@@ -1,36 +1,43 @@
 package org.bogacheva.training.contoller;
 
+import lombok.RequiredArgsConstructor;
 import org.bogacheva.training.service.dto.ItemCreateDTO;
 import org.bogacheva.training.service.item.ItemService;
 import org.bogacheva.training.service.dto.ItemDTO;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/items")
+@RequiredArgsConstructor
 public class ItemController {
 
     private final ItemService itemService;
 
-    public ItemController(ItemService itemService) {
-        this.itemService = itemService;
+    @PostMapping
+    public ResponseEntity<ItemDTO> create(@RequestBody ItemCreateDTO itemCreateDTO) {
+        ItemDTO newItem = itemService.create(itemCreateDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(newItem);
     }
 
-    public void create(ItemCreateDTO itemCreateDTO) {
-        itemService.create(itemCreateDTO);
+    @GetMapping
+    public ResponseEntity<List<ItemDTO>> getAll() {
+        List<ItemDTO> items = itemService.getAll();
+        return ResponseEntity.ok(items);
     }
 
-    public List<ItemDTO> getAll() {
-        return itemService.getAll();
+    @GetMapping("/{itemId}")
+    public ResponseEntity<ItemDTO> get(@PathVariable Long itemId) {
+        ItemDTO itemDTO = itemService.getById(itemId);
+        return ResponseEntity.ok(itemDTO);
     }
 
-    public ItemDTO get(Long itemId) {
-        return itemService.getById(itemId);
-    }
-
-    public void delete(Long itemId) {
+    @DeleteMapping("/{itemId}")
+    public ResponseEntity<Void> delete(@PathVariable Long itemId) {
         itemService.delete(itemId);
+        return ResponseEntity.noContent().build();
     }
 }

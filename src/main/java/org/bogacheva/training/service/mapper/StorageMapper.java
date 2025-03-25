@@ -7,14 +7,13 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring", uses = ItemMapper.class)
+@Mapper(componentModel = "spring", uses = {ItemMapper.class, StorageMapperHelper.class})
 public interface StorageMapper {
 
-    @Mapping(target = "items", source = "items")
-    @Mapping(target = "storages", expression = "java(mapStorageIds(storage.getSubStorages()))")
-    @Mapping(target = "parentId", expression = "java(mapParentId(storage))")
+    @Mapping(target = "items", source = "items", qualifiedByName = "mapItemIds")
+    @Mapping(target = "storages", source = "subStorages", qualifiedByName = "mapStorageIds")
+    @Mapping(target = "parentId", source = "parent", qualifiedByName = "mapParentId")
     StorageDTO toDTO(Storage storage);
 
     @Mapping(target = "id", ignore = true)
@@ -24,13 +23,4 @@ public interface StorageMapper {
     Storage toEntity(StorageCreateDTO storageDTO);
 
     List<StorageDTO> toDTOList(List<Storage> storages);
-
-    default List<Long> mapStorageIds(List<Storage> storages) {
-        return storages.stream().map(Storage::getId).collect(Collectors.toList());
-    }
-
-    default Long mapParentId(Storage storage) {
-        return storage.getParent() != null ? storage.getParent().getId() : null;
-    }
-
 }

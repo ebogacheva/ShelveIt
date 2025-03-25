@@ -1,14 +1,7 @@
 package org.bogacheva.training.repository.item;
 
 import org.bogacheva.training.domain.item.Item;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
-import java.util.Optional;
-
-public interface ItemRepository {
-
-    void add(Item item);
-    void remove(Long itemId);
-    List<Item> getAll();
-    Optional<Item> getById(Long itemId);
+public interface ItemRepository extends JpaRepository<Item, Long> {
 }

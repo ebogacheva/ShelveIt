@@ -11,12 +11,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class ItemService {
-
-    private static final AtomicLong counter = new AtomicLong(1);
 
     private final ItemRepository itemRepo;
     private final StorageRepository storageRepo;
@@ -28,33 +25,31 @@ public class ItemService {
         this.itemMapper = itemMapper;
     }
 
-    private static long getNextId() {
-        return counter.getAndIncrement();
-    }
-
-    public void create(ItemCreateDTO itemCreateDTO) {
-        Item item = itemMapper.toEntity(itemCreateDTO);
+    public ItemDTO create(ItemCreateDTO itemCreateDTO) {
+        Item newItem = itemMapper.toEntity(itemCreateDTO);
         Storage storage = getStorage(itemCreateDTO.getStorageId());
-        item.setStorage(storage);
-        item.setId(getNextId());
-        itemRepo.add(item);
+        newItem.setStorage(storage);
+        Item item = itemRepo.save(newItem);
         storage.getItems().add(item);
+        storageRepo.save(storage);
+        return itemMapper.toDTO(item);
     }
 
     public ItemDTO getById(Long itemId) {
-        return itemRepo.getById(itemId).map(itemMapper::toDTO).orElseThrow(() -> new NoSuchElementException("Item was not found."));
+        Item item = itemRepo.findById(itemId).orElseThrow(() -> new NoSuchElementException("Item was not found."));
+        return itemMapper.toDTO(item);
     }
 
     public List<ItemDTO> getAll() {
-        return itemMapper.toDTOList(itemRepo.getAll());
+        return itemMapper.toDTOList(itemRepo.findAll());
     }
 
     public void delete(Long itemId) {
-        itemRepo.remove(itemId);
+        itemRepo.deleteById(itemId);
     }
 
     private Storage getStorage(Long storageId) {
-        return storageRepo.getById(storageId)
+        return storageRepo.findById(storageId)
                 .orElseThrow(() -> new NoSuchElementException("Storage was not found."));
     }
 

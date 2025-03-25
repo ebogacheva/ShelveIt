@@ -14,12 +14,9 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class StorageService {
-
-    private static final AtomicLong counter = new AtomicLong(1);
 
     private final StorageRepository storageRepo;
     private final StorageMapper storageMapper;
@@ -31,13 +28,10 @@ public class StorageService {
         this.itemMapper = itemMapper;
     }
 
-    private static long getNextId() {
-        return counter.getAndIncrement();
-    }
-
-    public void create(StorageCreateDTO storageCreateDTO) {
+    public StorageDTO create(StorageCreateDTO storageCreateDTO) {
         Storage newStorage = buildStorageFromDTO(storageCreateDTO);
-        storageRepo.add(newStorage);
+        Storage storage = storageRepo.save(newStorage);
+        return storageMapper.toDTO(storage);
     }
 
     public StorageDTO getById(Long storageId) {
@@ -45,49 +39,57 @@ public class StorageService {
     }
 
     public void delete(Long storageId) {
-        storageRepo.remove(storageId);
+        storageRepo.deleteById(storageId);
     }
 
     public List<StorageDTO> getAll() {
-        return storageMapper.toDTOList(storageRepo.getAll());
+        return storageMapper.toDTOList(storageRepo.findAll());
+    }
+
+    public List<ItemDTO> getAllItemDTOs(Long storageId) {
+        return itemMapper.toDTOList(getAllItems(storageId));
+    }
+
+    public List<StorageDTO> getSubStorages(Long storageId) {
+        Storage storage = getStorageById(storageId);
+        List<Storage> substorages = storage.getSubStorages();
+        return storageMapper.toDTOList(substorages);
     }
 
     private Storage buildStorageFromDTO(StorageCreateDTO storageCreateDTO) {
+        validateStorageParent(storageCreateDTO);
         Storage parent = getParentStorage(storageCreateDTO.getParentId());
-        checkStorageTypeAndThrowException(storageCreateDTO.getType(), parent);
-        Storage newStorage = new Storage(storageCreateDTO.getName(), storageCreateDTO.getType(), parent);
-        Long id = getNextId();
-        newStorage.setId(id);
+        validateParentChildCompatibility(storageCreateDTO.getType(), parent);
+
+        return createNewStorage(storageCreateDTO, parent);
+    }
+
+    private Storage createNewStorage(StorageCreateDTO storageCreateDTO, Storage parent) {
+        Storage newStorage = storageMapper.toEntity(storageCreateDTO);
+        newStorage.setParent(parent);
         return newStorage;
     }
 
-    private void checkStorageTypeAndThrowException(StorageType type, Storage parent) {
-        checkIfStorageRequiresParent(type, parent);
-        checkIfStorageCannotHaveParent(type, parent);
-        checkIfParentCanContainType(type, parent);
-    }
-
-    private void checkIfParentCanContainType(StorageType type, Storage parent) {
+    private void validateParentChildCompatibility(StorageType type, Storage parent) {
         if (parent != null && !parent.getType().getStrategy().canContain(type)) {
             throw new IllegalArgumentException(parent.getType() + " cannot contain " + type);
         }
     }
 
-    private void checkIfStorageCannotHaveParent(StorageType type, Storage parent) {
-        if (!type.getStrategy().canHaveParent() && parent != null) {
-            throw new IllegalArgumentException(type + " storage cannot have a parent.");
+    private void validateStorageParent(StorageCreateDTO storageCreateDTO) {
+        StorageType type = storageCreateDTO.getType();
+        boolean hasParent = storageCreateDTO.getParentId() != null;
+        if (!type.getStrategy().canHaveParent() && hasParent) {
+            throw new IllegalArgumentException(type + " storage should not have a parent.");
         }
-    }
-
-    private void checkIfStorageRequiresParent(StorageType type, Storage parent) {
-        if (type.getStrategy().canHaveParent() && parent == null) {
+        if (type.getStrategy().canHaveParent() && !hasParent) {
             throw new IllegalArgumentException(type + " storage requires a parent.");
         }
     }
 
     private Storage getStorageById(Long storageId) {
-        return storageRepo.getById(storageId)
-                .orElseThrow(() -> new NoSuchElementException("Storage was not found."));
+        return storageRepo.findById(storageId)
+                .orElseThrow(() -> new NoSuchElementException("Storage with id " + storageId + " haven't been found."));
     }
 
     private Storage getParentStorage(Long parentId) {
@@ -99,9 +101,5 @@ public class StorageService {
         List<Item> allItems = new ArrayList<>(storage.getItems());
         storage.getSubStorages().forEach(sub -> allItems.addAll(getAllItems(sub.getId())));
         return allItems;
-    }
-
-    public List<ItemDTO> getAllItemDTOs(Long storageId) {
-        return itemMapper.toDTOList(getAllItems(storageId));
     }
 }
