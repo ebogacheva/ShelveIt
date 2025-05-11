@@ -13,6 +13,7 @@ import org.bogacheva.training.domain.storage.Storage;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Table(name = "items")
 public class Item {
 
     @Id
@@ -29,5 +30,10 @@ public class Item {
     public Item(String name, Storage storage) {
         this.name = name;
         this.storage = storage;
+    }
+
+    @Override
+    public String toString() {
+        return id + ": " + name + "storage: id " + storage.getId() + " " + storage.getName();
     }
 }

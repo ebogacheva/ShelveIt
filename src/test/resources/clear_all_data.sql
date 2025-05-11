@@ -1,0 +1,2 @@
+TRUNCATE TABLE storages;
+TRUNCATE TABLE items;

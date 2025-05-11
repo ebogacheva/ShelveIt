@@ -24,4 +24,13 @@ public enum StorageType {
     public StorageTypeStrategy getStrategy() {
         return STRATEGY_MAP.get(this);
     }
+
+    public static StorageType of(String value) {
+        for (StorageType type : StorageType.values()) {
+            if (type.name().equalsIgnoreCase(value)) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException(value + " is not an existing storage type!");
+    }
 }

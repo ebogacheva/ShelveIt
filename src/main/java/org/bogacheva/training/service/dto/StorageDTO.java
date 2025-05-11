@@ -19,4 +19,9 @@ public class StorageDTO {
     private List<Long> items;
     private List<Long> storages;
     private Long parentId;
+
+    @Override
+    public String toString() {
+        return "ID: " + id + " : " + name + " " + type + " parent: " + parentId;
+    }
 }

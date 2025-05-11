@@ -1,9 +1,7 @@
 package org.bogacheva.training.domain.storage;
 
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jdk.jfr.Enabled;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,6 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "storages")
 public class Storage {
 
     @Id
@@ -30,10 +29,10 @@ public class Storage {
     @Enumerated(EnumType.STRING)
     private StorageType type;
 
-    @OneToMany(mappedBy = "storage")
+    @OneToMany(mappedBy = "storage", fetch = FetchType.EAGER) //TODO: need LAZY
     private List<Item> items;
 
-    @OneToMany(mappedBy = "parent")
+    @OneToMany(mappedBy = "parent", fetch = FetchType.EAGER) //TODO: need LAZY
     private List<Storage> subStorages;
 
     @ManyToOne
