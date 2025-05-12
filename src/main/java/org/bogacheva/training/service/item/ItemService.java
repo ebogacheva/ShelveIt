@@ -1,5 +1,6 @@
 package org.bogacheva.training.service.item;
 
+import jakarta.transaction.Transactional;
 import org.bogacheva.training.domain.item.Item;
 import org.bogacheva.training.domain.storage.Storage;
 import org.bogacheva.training.repository.item.ItemRepository;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
+@Transactional
 public class ItemService {
 
     private final ItemRepository itemRepo;

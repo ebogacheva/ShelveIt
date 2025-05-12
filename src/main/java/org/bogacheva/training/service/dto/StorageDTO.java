@@ -22,6 +22,12 @@ public class StorageDTO {
 
     @Override
     public String toString() {
-        return "ID: " + id + " : " + name + " " + type + " parent: " + parentId;
+        return String.format(
+                "%-8s %-20s %-20s %-10s",
+                "id: " + id,
+                "name: " + name,
+                "type: " + type,
+                "parent: " + (parentId != null ? parentId : "-")
+        );
     }
 }

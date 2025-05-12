@@ -13,4 +13,14 @@ public class ItemDTO {
     private Long id;
     private String name;
     private StorageDTO storage;
+
+    @Override
+    public String toString() {
+        return String.format(
+                "%-8s %-20s %-18s",
+                "id: " + id,
+                "name: " + name,
+                "storage: " + (storage != null ? storage.getId() : "-")
+        );
+    }
 }

@@ -29,10 +29,10 @@ public class Storage {
     @Enumerated(EnumType.STRING)
     private StorageType type;
 
-    @OneToMany(mappedBy = "storage", fetch = FetchType.EAGER) //TODO: need LAZY
+    @OneToMany(mappedBy = "storage", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true) //TODO: need LAZY
     private List<Item> items;
 
-    @OneToMany(mappedBy = "parent", fetch = FetchType.EAGER) //TODO: need LAZY
+    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true) //TODO: need LAZY
     private List<Storage> subStorages;
 
     @ManyToOne

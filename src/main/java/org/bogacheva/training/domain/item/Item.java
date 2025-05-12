@@ -24,16 +24,11 @@ public class Item {
     private String name;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "storage_id")
+    @JoinColumn(name = "storage_id", nullable = false)
     private Storage storage;
 
     public Item(String name, Storage storage) {
         this.name = name;
         this.storage = storage;
-    }
-
-    @Override
-    public String toString() {
-        return id + ": " + name + "storage: id " + storage.getId() + " " + storage.getName();
     }
 }
