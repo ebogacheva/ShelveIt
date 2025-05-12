@@ -50,9 +50,19 @@ public class ItemService {
         itemRepo.deleteById(itemId);
     }
 
+    public List<ItemDTO> getByStorageId(Long storageId) {
+        validateStorageExists(storageId);
+        List<Item> items = itemRepo.findItemsByStorageId(storageId);
+        return itemMapper.toDTOList(items);
+    }
+
     private Storage getStorage(Long storageId) {
         return storageRepo.findById(storageId)
                 .orElseThrow(() -> new NoSuchElementException("Storage was not found."));
+    }
+
+    private void validateStorageExists(Long storageId) {
+        getStorage(storageId);
     }
 
 }

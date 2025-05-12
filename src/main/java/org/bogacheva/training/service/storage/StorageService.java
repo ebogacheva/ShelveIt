@@ -52,10 +52,11 @@ public class StorageService {
         return itemMapper.toDTOList(getAllItems(storageId));
     }
 
-    public List<StorageDTO> getSubStorages(Long storageId) {
-        Storage storage = getStorageById(storageId);
-        List<Storage> substorages = storage.getSubStorages();
-        return storageMapper.toDTOList(substorages);
+    public List<StorageDTO> getSubStorages(Long parentId) {
+        validateStorageExists(parentId);
+        return storageRepo.findByParentId(parentId).stream()
+                .map(storageMapper::toDTO)
+                .toList();
     }
 
     private Storage buildStorageFromDTO(StorageCreateDTO storageCreateDTO) {
@@ -92,6 +93,10 @@ public class StorageService {
     private Storage getStorageById(Long storageId) {
         return storageRepo.findById(storageId)
                 .orElseThrow(() -> new NoSuchElementException("Storage with id " + storageId + " haven't been found."));
+    }
+
+    private void validateStorageExists(Long storageId) {
+        getStorageById(storageId);
     }
 
     private Storage getParentStorage(Long parentId) {

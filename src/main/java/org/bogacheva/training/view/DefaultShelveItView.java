@@ -26,6 +26,7 @@ public class DefaultShelveItView implements ShelveItView{
         printer.println("    create item <name> <storageId>");
         printer.println("    remove storage <storageId>");
         printer.println("    remove item <itemId>");
+
         printer.println("    exit");
         printer.println("where <name> may contain letters, numbers and spaces, should be given in quotation marks.");
         printer.println("where <type> is one of: RESIDENCE, ROOM, FURNITURE, UNIT.");

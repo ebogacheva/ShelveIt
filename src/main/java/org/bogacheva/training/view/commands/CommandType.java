@@ -8,6 +8,8 @@ public enum CommandType {
     LIST_ITEMS("list_items"),
     REMOVE_ITEM("remove_item"),
     REMOVE_STORAGE("remove_storage"),
+    ITEMS_BY_STORAGE("get_items"),
+    LIST_SUBSTORAGES("list_substorages"),
     EXIT("exit");
 
     private final String value;
