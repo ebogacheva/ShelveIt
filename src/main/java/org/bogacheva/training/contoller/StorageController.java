@@ -3,7 +3,7 @@ package org.bogacheva.training.contoller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.bogacheva.training.service.dto.ItemDTO;
-import org.bogacheva.training.service.storage.StorageService;
+import org.bogacheva.training.service.storage.DefaultStorageService;
 import org.bogacheva.training.service.dto.StorageCreateDTO;
 import org.bogacheva.training.service.dto.StorageDTO;
 import org.springframework.http.HttpStatus;
@@ -17,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StorageController {
 
-    private final StorageService storageService;
+    private final DefaultStorageService storageService;
 
     @PostMapping
     public ResponseEntity<StorageDTO> create(@RequestBody @Valid StorageCreateDTO storageCreateDTO) {
