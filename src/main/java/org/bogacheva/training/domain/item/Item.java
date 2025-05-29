@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.bogacheva.training.domain.storage.Storage;
 
+import java.util.List;
+
 @Setter
 @Getter
 @AllArgsConstructor
@@ -26,6 +28,11 @@ public class Item {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "storage_id", nullable = false)
     private Storage storage;
+
+    @ElementCollection
+    @CollectionTable(name = "item_keywords", joinColumns = @JoinColumn(name = "item_id"))
+    @Column(name = "keyword")
+    private List<String> keywords;
 
     public Item(String name, Storage storage) {
         this.name = name;

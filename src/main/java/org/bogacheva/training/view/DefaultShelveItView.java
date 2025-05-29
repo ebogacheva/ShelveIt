@@ -23,12 +23,13 @@ public class DefaultShelveItView implements ShelveItView{
         printer.println("    list storages");
         printer.println("    list items");
         printer.println("    create storage <type> <name> <parentId>");
-        printer.println("    create item <name> <storageId>");
+        printer.println("    create item <name> <storageId> <keyword1,keyword2,...>");
         printer.println("    remove storage <storageId>");
         printer.println("    remove item <itemId>");
 
         printer.println("    exit");
         printer.println("where <name> may contain letters, numbers and spaces, should be given in quotation marks.");
+        printer.println("where <keywords> is a comma-separated list (e.g., book,reading,novel).");
         printer.println("where <type> is one of: RESIDENCE, ROOM, FURNITURE, UNIT.");
         printer.println("where <parentId> is the index of parent storage in the list.");
         printer.println("where <storageId> is the index of storage in the list.");

@@ -35,6 +35,12 @@ public class ItemController {
         return ResponseEntity.ok(itemDTO);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<ItemDTO>> searchByKeywords(@RequestParam List<String> keywords) {
+        List<ItemDTO> items = itemService.findByKeywords(keywords);
+        return ResponseEntity.ok(items);
+    }
+
     @DeleteMapping("/{itemId}")
     public ResponseEntity<Void> delete(@PathVariable Long itemId) {
         itemService.delete(itemId);

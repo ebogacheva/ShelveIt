@@ -5,6 +5,7 @@ import org.bogacheva.training.view.commands.*;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -46,7 +47,11 @@ public class StringToCommandTranslator implements Translator<String, BaseCommand
                 validateArgs(parts, CREATE_ITEM_ARGS);
                 String name = validateName(getName(parts, ITEM_NAME_START_INDEX));
                 Long storageId = validateId(parts[STORAGE_ID_INDEX]);
-                yield new CreateItemCommand(name, storageId);
+                List<String> keywords = Arrays.stream(parts[4].split(","))
+                        .map(String::trim)
+                        .filter(s -> !s.isEmpty())
+                        .toList();
+                yield new CreateItemCommand(name, storageId, keywords);
             }
             case REMOVE_ITEM -> createRemoveCommand(parts, RemoveItemCommand::new);
             case REMOVE_STORAGE -> createRemoveCommand(parts, RemoveStorageCommand::new);

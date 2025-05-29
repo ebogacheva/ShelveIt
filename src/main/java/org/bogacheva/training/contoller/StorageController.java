@@ -54,4 +54,12 @@ public class StorageController {
         storageService.delete(storageId);
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping("/{id}/move")
+    public ResponseEntity<Void> deleteAndMoveContents(
+            @PathVariable Long id,
+            @RequestParam(value = "targetStorageId", required = false) Long targetStorageId) {
+        storageService.deleteAndMoveContents(id, targetStorageId);
+        return ResponseEntity.noContent().build();
+    }
 }

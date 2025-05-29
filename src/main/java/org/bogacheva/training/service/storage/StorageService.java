@@ -109,4 +109,45 @@ public class StorageService {
         storage.getSubStorages().forEach(sub -> allItems.addAll(getAllItems(sub.getId())));
         return allItems;
     }
+
+    public void deleteAndMoveContents(Long storageId, Long targetStorageId) {
+        Storage storageToDelete = getStorageById(storageId);
+        if (storageToDelete.getType() == StorageType.RESIDENCE) {
+            requireNonNullTargetStorageId(targetStorageId);
+        }
+        Storage targetStorage = getTargetStorage(targetStorageId, storageToDelete.getParent());
+
+        moveItems(storageToDelete, targetStorage);
+        moveSubStorages(storageToDelete, targetStorage);
+
+        storageRepo.save(targetStorage);
+        storageRepo.delete(storageToDelete);
+    }
+
+    private void moveItems(Storage from, Storage to) {
+        for (Item item : from.getItems()) {
+            item.setStorage(to);
+            to.getItems().add(item);
+        }
+        from.getItems().clear();
+    }
+
+    private void moveSubStorages(Storage from, Storage to) {
+        for (Storage subStorage : from.getSubStorages()) {
+            subStorage.setParent(to);
+            to.getSubStorages().add(subStorage);
+        }
+        from.getSubStorages().clear();
+    }
+
+    private Storage getTargetStorage(Long targetStorageId, Storage parentStorage) {
+        return (targetStorageId != null) ? getStorageById(targetStorageId) : parentStorage;
+    }
+
+    private void requireNonNullTargetStorageId(Long targetStorageId) {
+        if (targetStorageId == null) {
+            throw new IllegalArgumentException("No target storage provided. " +
+                    "Storage can't be deleted without moving its contents.");
+        }
+    }
 }
