@@ -2,6 +2,7 @@ package org.bogacheva.training.contoller;
 
 import lombok.RequiredArgsConstructor;
 import org.bogacheva.training.service.dto.ItemCreateDTO;
+import org.bogacheva.training.service.dto.ItemUpdateDTO;
 import org.bogacheva.training.service.item.ItemService;
 import org.bogacheva.training.service.dto.ItemDTO;
 import org.springframework.http.HttpStatus;
@@ -39,6 +40,14 @@ public class ItemController {
     public ResponseEntity<List<ItemDTO>> searchByKeywords(@RequestParam List<String> keywords) {
         List<ItemDTO> items = itemService.findByKeywords(keywords);
         return ResponseEntity.ok(items);
+    }
+
+    @PutMapping("/{itemId}")
+    public ResponseEntity<ItemDTO> update(
+            @PathVariable Long itemId,
+            @RequestBody ItemUpdateDTO itemUpdateDTO) {
+        ItemDTO updated = itemService.update(itemId, itemUpdateDTO);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{itemId}")
