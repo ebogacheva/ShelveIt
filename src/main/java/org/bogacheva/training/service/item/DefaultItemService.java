@@ -11,6 +11,7 @@ import org.bogacheva.training.service.dto.ItemUpdateDTO;
 import org.bogacheva.training.service.mapper.ItemMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -20,6 +21,7 @@ public class DefaultItemService implements ItemService {
 
     private static final String ITEM_NOT_FOUND = "Item with ID: %s was not found.";
     private static final String STORAGE_NOT_FOUND = "Storage with ID: %s was not found.";
+    private static final String ITEM_HAS_NO_STORAGE = "Item with ID: %s has no associated storage.";
     
     private final ItemRepository itemRepo;
     private final StorageRepository storageRepo;
@@ -76,14 +78,45 @@ public class DefaultItemService implements ItemService {
 
     @Override
     public ItemDTO update(Long itemId, ItemUpdateDTO itemUpdateDTO) {
-        validateItemUpdateDTO(itemUpdateDTO);
         Item item = getItemById(itemId);
         applyChanges(item, itemUpdateDTO);
         Item savedItem = itemRepo.save(item);
         return itemMapper.toDTO(savedItem);
     }
 
+    @Override
+    public List<ItemDTO> getItemsNear(Long itemId) {
+        Item item = getItemById(itemId);
+        Storage storage = item.getStorage();
+        validateNoneNullStorage(itemId, storage);
+        List<Item> itemsNear = itemRepo.findItemsByStorageIdAndExcludeItemId(storage.getId(), itemId);
+        return itemMapper.toDTOList(itemsNear);
+    }
+
+    @Override
+    public List<Long> getStorageHierarchyIds(Long itemId) {
+        Item item = getItemById(itemId);
+        Storage storage = item.getStorage();
+        validateNoneNullStorage(itemId, storage);
+        return itemRepo.findStorageHierarchyIds(itemId);
+    }
+
+    private List<Long> trackParentStorages(Storage storage) {
+        List<Long> parentIds = new ArrayList<>();
+        for (Storage current = storage; current != null; current = current.getParent()) {
+            parentIds.add(current.getId());
+        }
+        return parentIds;
+    }
+
+    private void validateNoneNullStorage(Long itemId, Storage storage) {
+        if (storage == null) {
+            throw new IllegalStateException(formatMsg(ITEM_HAS_NO_STORAGE, itemId));
+        }
+    }
+
     private void applyChanges(Item item, ItemUpdateDTO itemUpdateDTO) {
+        validateItemUpdateDTO(itemUpdateDTO);
         updateNameIfPresent(item, itemUpdateDTO.getName());
         updateKeywordsIfPresent(item, itemUpdateDTO.getKeywords());
         updateStorageIfChanged(item, itemUpdateDTO.getStorageId());
@@ -121,11 +154,7 @@ public class DefaultItemService implements ItemService {
 
     private boolean shouldUpdateStorage(Item item, Long newStorageId) {
         return newStorageId != null &&
-                isStorageIdChanged(item.getStorage().getId(), newStorageId);
-    }
-
-    private boolean isStorageIdChanged(Long currStorageId, Long newStorageId) {
-        return !currStorageId.equals(newStorageId);
+                !item.getStorage().getId().equals(newStorageId);
     }
 
     private Storage getStorageById(Long storageId) {
@@ -139,7 +168,7 @@ public class DefaultItemService implements ItemService {
         getStorageById(storageId);
     }
 
-    private String formatMsg(String baseMessage, Long id) {
-        return String.format(baseMessage, id);
+    private String formatMsg(String baseMsg, Long id) {
+        return String.format(baseMsg, id);
     }
 }

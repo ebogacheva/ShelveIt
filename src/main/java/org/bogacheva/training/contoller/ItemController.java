@@ -55,4 +55,16 @@ public class ItemController {
         itemService.delete(itemId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{itemId}/near")
+    public ResponseEntity<List<ItemDTO>> getItemsNear(@PathVariable Long itemId) {
+        List<ItemDTO> nearItems = itemService.getItemsNear(itemId);
+        return ResponseEntity.ok(nearItems);
+    }
+
+    @GetMapping("/{itemId}/trackStorages")
+    public ResponseEntity<List<Long>> trackStorages(@PathVariable Long itemId) {
+        List<Long> storageIds = itemService.getStorageHierarchyIds(itemId);
+        return ResponseEntity.ok(storageIds);
+    }
 }

@@ -20,4 +20,8 @@ public interface ItemService {
     List<ItemDTO> findByKeywords(List<String> keywords);
 
     ItemDTO update(Long itemId, ItemUpdateDTO itemUpdateDTO);
+
+    List<ItemDTO> getItemsNear(Long itemId);
+
+    List<Long> getStorageHierarchyIds(Long itemId);
 }
