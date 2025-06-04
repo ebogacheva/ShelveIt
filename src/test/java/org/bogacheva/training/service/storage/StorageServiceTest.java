@@ -31,7 +31,7 @@ class StorageServiceTest {
     private StorageRepository storageRepo;
 
     @InjectMocks
-    private StorageService storageService;
+    private DefaultStorageService storageService;
 
     @Test
     void create_shouldCallStorageRepo_WhenValidResidenceDTOProvided() {

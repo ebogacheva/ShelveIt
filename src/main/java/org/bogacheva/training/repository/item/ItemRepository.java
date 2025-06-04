@@ -35,6 +35,4 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
         """, nativeQuery = true)
     List<Long> findStorageHierarchyIds(@Param("itemId") Long itemId); // TODO: add stored procedure for this query
 
-
-
 }
