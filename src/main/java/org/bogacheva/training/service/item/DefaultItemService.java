@@ -14,6 +14,7 @@ import org.bogacheva.training.service.dto.ItemUpdateDTO;
 import org.bogacheva.training.service.mapper.ItemMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -150,7 +151,8 @@ public class DefaultItemService implements ItemService {
 
     private void updateKeywordsIfPresent(Item item, List<String> keywords) {
         if (keywords != null) {
-            item.setKeywords(keywords);
+            List<String> newKeywords = new ArrayList<>(keywords);
+            item.setKeywords(newKeywords);
         }
     }
 
@@ -162,6 +164,7 @@ public class DefaultItemService implements ItemService {
     }
 
     private boolean shouldUpdateStorage(Item item, Long newStorageId) {
+        validateNoneNullStorage(item.getId(), item.getStorage());
         return newStorageId != null &&
                 !item.getStorage().getId().equals(newStorageId);
     }
