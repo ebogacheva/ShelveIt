@@ -26,6 +26,12 @@ public class GlobalExceptionHandler {
         return buildShelveItErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
+    @ExceptionHandler(InvalidStorageHierarchyException.class)
+    public ResponseEntity<ShelveItError> handle(InvalidStorageHierarchyException ex) {
+        log.error("Invalid storage hierarchy: {}", ex.getMessage());
+        return buildShelveItErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ShelveItError> handle(MethodArgumentNotValidException ex) {
         List<String> errors = ex.getBindingResult()

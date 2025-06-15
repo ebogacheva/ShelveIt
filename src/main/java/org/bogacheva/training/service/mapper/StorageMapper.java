@@ -17,8 +17,8 @@ public interface StorageMapper {
     StorageDTO toDTO(Storage storage);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "items", expression = "java(new ArrayList<>())")
-    @Mapping(target = "subStorages", expression = "java(new ArrayList<>())")
+    @Mapping(target = "items", ignore = true)
+    @Mapping(target = "subStorages", ignore = true)
     @Mapping(target = "parent", ignore = true)
     Storage toEntity(StorageCreateDTO storageDTO);
 

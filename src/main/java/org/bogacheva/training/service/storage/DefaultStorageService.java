@@ -9,6 +9,7 @@ import org.bogacheva.training.service.dto.ItemDTO;
 import org.bogacheva.training.service.dto.StorageCreateDTO;
 import org.bogacheva.training.service.dto.StorageDTO;
 import org.bogacheva.training.service.dto.StorageUpdateDTO;
+import org.bogacheva.training.service.exceptions.InvalidStorageHierarchyException;
 import org.bogacheva.training.service.exceptions.StorageNotFoundException;
 import org.bogacheva.training.service.mapper.ItemMapper;
 import org.bogacheva.training.service.mapper.StorageMapper;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Service implementation for managing Storage entities in the ShelveIt application.
@@ -35,13 +37,16 @@ public class DefaultStorageService implements StorageService {
     private final StorageRepository storageRepo;
     private final StorageMapper storageMapper;
     private final ItemMapper itemMapper;
+    private final StorageValidator validator;
 
     public DefaultStorageService(StorageRepository storageRepository,
                                  StorageMapper storageMapper,
-                                 ItemMapper itemMapper) {
+                                 ItemMapper itemMapper,
+                                 StorageValidator validator) {
         this.storageRepo = storageRepository;
         this.storageMapper = storageMapper;
         this.itemMapper = itemMapper;
+        this.validator = validator;
     }
 
     /**
@@ -149,10 +154,11 @@ public class DefaultStorageService implements StorageService {
     public void deleteAndMoveContents(Long storageId, Long targetStorageId) {
         log.debug("Starting operation to delete storage ID: {} and move contents to target ID: {}",
                 storageId, targetStorageId);
-        requireStorageIdNotNull(storageId);
+        validator.validateNotNull(storageId, () -> new IllegalArgumentException("Storage ID cannot be null"));
         Storage storageToDelete = findStorageByIdOrThrow(storageId);
         if (storageToDelete.getType() == StorageType.RESIDENCE) {
-            validateTargetForResidence(targetStorageId, storageToDelete);
+            validator.validateNotNull(targetStorageId, () -> new InvalidStorageHierarchyException(
+                    "Target storage ID is required when deleting a RESIDENCE"));
         }
         Storage targetStorage = getTargetStorage(targetStorageId, storageToDelete.getParent());
 
@@ -169,126 +175,60 @@ public class DefaultStorageService implements StorageService {
      * Type changes are validated against the storage hierarchy rules.
      *
      * @param id ID of the storage to update
-     * @param updateDTO DTO containing the properties to update
+     * @param dto DTO containing the properties to update
      * @return The updated storage as a DTO
      * @throws StorageNotFoundException if no storage with the given ID exists
      * @throws IllegalArgumentException if type change violates hierarchy rules
      */
     @Override
     @Transactional
-    public StorageDTO updateProperties(Long id, StorageUpdateDTO updateDTO) {
+    public StorageDTO updateProperties(Long id, StorageUpdateDTO dto) {
         log.debug("Updating properties for storage ID: {}", id);
         Storage storage = findStorageByIdOrThrow(id);
-        Storage updatedStorage = applyChanges(storage, updateDTO);
+        Storage updatedStorage = applyChanges(storage, dto);
         Storage savedUpdatedStorage = storageRepo.save(updatedStorage);
         log.info("Updated properties for storage ID: {}", id);
         return storageMapper.toDTO(savedUpdatedStorage);
     }
 
-    private Storage findStorageByIdOrThrow(Long storageId) {
-        return storageRepo.findById(storageId)
-                .orElseThrow(() -> new StorageNotFoundException(storageId));
+    private Storage findStorageByIdOrThrow(Long id) {
+        return storageRepo.findById(id)
+                .orElseThrow(() -> new StorageNotFoundException(id));
     }
 
-    private Storage getParentStorage(Long parentId) {
-        return (parentId != null) ? findStorageByIdOrThrow(parentId) : null;
-    }
-
-    private Storage getTargetStorage(Long targetStorageId, Storage parentStorage) {
-        if (targetStorageId != null) {
-            requireCurrAndTargetStorageIdsNotEqual(parentStorage.getId(), targetStorageId);
-            return findStorageByIdOrThrow(targetStorageId);
+    private Storage getTargetStorage(Long targetStorageId, Storage parent) {
+        if (targetStorageId == null) {
+            return parent;
         }
-        return parentStorage;
-    }
-
-    private void requireStorageIdNotNull(Long storageId) {
-        if (storageId == null) {
-            throw new IllegalArgumentException("Storage ID cannot be null");
-        }
-    }
-
-    private void validateTargetForResidence(Long targetStorageId, Storage storageToDelete) {
-        try {
-            requireStorageIdNotNull(targetStorageId);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("No target storage provided. " +
-                    "Storage can't be deleted without moving its contents.");
-        }
-    }
-
-    private void requireCurrAndTargetStorageIdsNotEqual(Long storageId, Long targetStorageId) {
-        if (storageId.equals(targetStorageId)) {
+        if (parent != null && targetStorageId.equals(parent.getId())) {
             throw new IllegalArgumentException("Cannot move contents to the same storage that is being deleted");
         }
+        return findStorageByIdOrThrow(targetStorageId);
     }
 
-    private Storage buildStorageFromDTO(StorageCreateDTO storageCreateDTO) {
-        Storage parent = getParentStorage(storageCreateDTO.getParentId());
-        validateStorageParentRequirement(storageCreateDTO.getType(), parent);
-        if (parent != null) {
-            validateParentCanContainType(parent, storageCreateDTO.getType());
+    private Storage buildStorageFromDTO(StorageCreateDTO dto) {
+        validator.validateStorageCreation(dto);
+        Storage parent = null;
+        if (dto.getParentId() != null) {
+            parent = findStorageByIdOrThrow(dto.getParentId());
+            validator.validateHierarchySubStorageRules(parent, dto.getType());
         }
-        return createNewStorage(storageCreateDTO, parent);
-    }
-
-    private Storage createNewStorage(StorageCreateDTO storageCreateDTO, Storage parent) {
-        Storage newStorage = storageMapper.toEntity(storageCreateDTO);
+        Storage newStorage = storageMapper.toEntity(dto);
         newStorage.setParent(parent);
         return newStorage;
     }
 
     private Storage applyChanges(Storage storage, StorageUpdateDTO updateDTO) {
-        updateNameIfPresent(storage, updateDTO.getName());
-        updateTypeIfPresent(storage, updateDTO.getType());
+        String newName = updateDTO.getName();
+        if (newName != null && !newName.trim().isEmpty()) {
+            storage.setName(newName);
+        }
+        StorageType newType = updateDTO.getType();
+        if (newType != null) {
+            validator.validateTypeUpdate(storage, newType);
+            storage.setType(newType);
+        }
         return storage;
-    }
-
-    private void updateTypeIfPresent(Storage storage, StorageType type) {
-        if (type != null) {
-            validateTypeUpdate(storage, type);
-            storage.setType(type);
-        }
-    }
-
-    private void updateNameIfPresent(Storage storage, String name) {
-        if (name != null && !name.trim().isEmpty()) {
-            storage.setName(name);
-        }
-    }
-
-    private void validateTypeUpdate(Storage storage, StorageType newType) {
-        validateStorageParentRequirement(newType, storage.getParent());
-        if (storage.getParent() != null) {
-            validateParentCanContainType(storage.getParent(), newType);
-        }
-        validateNewTypeCanContainExistingSubstorages(storage, newType);
-    }
-
-    private void validateParentCanContainType(Storage parent, StorageType childType) {
-        if (!parent.getType().getStrategy().canContain(childType)) {
-            throw new IllegalArgumentException(
-                    parent.getType() + " cannot contain " + childType);
-        }
-    }
-
-    private void validateStorageParentRequirement(StorageType type, Storage parent) {
-        boolean hasParent = parent != null;
-        if (!type.getStrategy().canHaveParent() && hasParent) {
-            throw new IllegalArgumentException(type + " storage should not have a parent.");
-        }
-        if (type.getStrategy().canHaveParent() && !hasParent) {
-            throw new IllegalArgumentException(type + " storage requires a parent.");
-        }
-    }
-
-    private void validateNewTypeCanContainExistingSubstorages(Storage storage, StorageType newType) {
-        for (Storage subStorage : storage.getSubStorages()) {
-            if (!newType.getStrategy().canContain(subStorage.getType())) {
-                throw new IllegalArgumentException(
-                        newType + " cannot contain existing sub-storage of type " + subStorage.getType());
-            }
-        }
     }
 
     private List<Item> getAllItems(Long storageId) {
@@ -306,20 +246,28 @@ public class DefaultStorageService implements StorageService {
     }
 
     private void moveItems(Storage from, Storage to) {
-        List<Item> itemsToMove = new ArrayList<>(from.getItems());
-        for (Item item : itemsToMove) {
-            item.setStorage(to);
-            to.getItems().add(item);
-        }
-        from.getItems().clear();
+        moveElements(
+                from.getItems(),
+                to.getItems(),
+                item -> item.setStorage(to)
+        );
     }
 
     private void moveSubStorages(Storage from, Storage to) {
-        List<Storage> subStoragesToMove = new ArrayList<>(from.getSubStorages());
-        for (Storage subStorage : subStoragesToMove) {
-            subStorage.setParent(to);
-            to.getSubStorages().add(subStorage);
+        moveElements(
+                from.getSubStorages(),
+                to.getSubStorages(),
+                subStorage -> subStorage.setParent(to)
+        );
+    }
+
+    private <T> void moveElements(List<T> fromList, List<T> toList, Consumer<T> reassignParent) {
+
+        List<T> elementsToMove = new ArrayList<>(fromList);
+        for (T element : elementsToMove) {
+            reassignParent.accept(element);
+            toList.add(element);
         }
-        from.getSubStorages().clear();
+        fromList.clear();
     }
 }

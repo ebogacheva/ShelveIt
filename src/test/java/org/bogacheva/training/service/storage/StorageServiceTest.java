@@ -5,6 +5,8 @@ import org.bogacheva.training.domain.storage.StorageType;
 import org.bogacheva.training.repository.storage.StorageRepository;
 import org.bogacheva.training.service.dto.StorageCreateDTO;
 import org.bogacheva.training.service.dto.StorageDTO;
+import org.bogacheva.training.service.exceptions.InvalidStorageHierarchyException;
+import org.bogacheva.training.service.exceptions.StorageNotFoundException;
 import org.bogacheva.training.service.mapper.StorageMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,43 +35,56 @@ class StorageServiceTest {
     @InjectMocks
     private DefaultStorageService storageService;
 
+    @Mock
+    private StorageValidator validator;
+
     @Test
     void create_shouldCallStorageRepo_WhenValidResidenceDTOProvided() {
         StorageCreateDTO residenceDTO = new StorageCreateDTO("Storage Name", StorageType.RESIDENCE, null);
         Storage storage = new Storage("Storage Name", StorageType.ROOM, null);
 
+        doNothing().when(validator).validateStorageCreation(residenceDTO);
         when(storageMapper.toEntity(residenceDTO)).thenReturn(storage);
+        when(storageRepo.save(storage)).thenReturn(storage);
 
         storageService.create(residenceDTO);
 
-        verify(storageRepo, times(1)).save(any(Storage.class));
+        verify(validator).validateStorageCreation(residenceDTO);
+        verify(storageMapper).toEntity(residenceDTO);
+        verify(storageRepo).save(storage);
     }
 
     @Test
     void create_shouldThrowException_WhenRoomDTOWithoutParentProvided() {
         StorageCreateDTO roomDTO = new StorageCreateDTO("Storage Name", StorageType.ROOM, null);
 
-        assertThrows(IllegalArgumentException.class, () -> storageService.create(roomDTO));
+        doThrow(new InvalidStorageHierarchyException("Storage type ROOM requires a parent"))
+                .when(validator).validateStorageCreation(roomDTO);
 
-        verify(storageMapper, never()).toEntity(any(StorageCreateDTO.class));
-        verify(storageRepo, never()).save(any(Storage.class));
+        assertThrows(InvalidStorageHierarchyException.class, () -> storageService.create(roomDTO));
+
+        verify(validator).validateStorageCreation(roomDTO);
+        verify(storageMapper, never()).toEntity(any());
+        verify(storageRepo, never()).save(any());
     }
 
     @Test
-    void create_shouldThrowException_WhenResidenceDTOWitParentProvided() {
-        StorageCreateDTO roomDTO = new StorageCreateDTO("Storage Name", StorageType.RESIDENCE, 1L);
-        assertThrows(IllegalArgumentException.class, () -> storageService.create(roomDTO));
+    void create_shouldThrowException_WhenResidenceDTOWithParentProvided() {
+        StorageCreateDTO residenceDTO = new StorageCreateDTO("Storage Name", StorageType.RESIDENCE, 1L);
+        doThrow(new InvalidStorageHierarchyException("RESIDENCE storage should not have a parent"))
+                .when(validator).validateStorageCreation(residenceDTO);
 
-        verify(storageMapper, never()).toEntity(any(StorageCreateDTO.class));
-        verify(storageRepo, never()).save(any(Storage.class));
+        assertThrows(InvalidStorageHierarchyException.class, () -> storageService.create(residenceDTO));
+
+        verify(validator).validateStorageCreation(residenceDTO);
+        verify(storageMapper, never()).toEntity(any());
+        verify(storageRepo, never()).save(any());
     }
 
     @Test
     void findById_shouldReturnStorageDTO_WhenValidIdProvided() {
-        Storage storage = new Storage("Storage Name", StorageType.RESIDENCE, null);
-        storage.setId(1L);
-
-        StorageDTO expectedResult = new StorageDTO(1L, "Storage Name", StorageType.RESIDENCE, new ArrayList<>(), new ArrayList<>(), null);
+        Storage storage = createStorage(1L, "Storage Name", StorageType.RESIDENCE, null);
+        StorageDTO expectedResult = createStorageDTO(1L, "Storage Name", StorageType.RESIDENCE, null);
 
         when(storageRepo.findById(1L)).thenReturn(Optional.of(storage));
         when(storageMapper.toDTO(storage)).thenReturn(expectedResult);
@@ -85,10 +100,10 @@ class StorageServiceTest {
     }
 
     @Test
-    void findById_shouldThrowNoSuchElement_WhenInvalidIdProvided() {
+    void findById_shouldThrowStorageNotFound_WhenInvalidIdProvided() {
         when(storageRepo.findById(999L)).thenReturn(Optional.empty());
 
-        assertThrows(NoSuchElementException.class, () -> storageService.getById(999L));
+        assertThrows(StorageNotFoundException.class, () -> storageService.getById(999L));
         verify(storageRepo, times(1)).findById(999L);
     }
 
