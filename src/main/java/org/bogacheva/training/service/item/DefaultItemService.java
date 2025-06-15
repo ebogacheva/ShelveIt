@@ -85,8 +85,8 @@ public class DefaultItemService implements ItemService {
     public ItemDTO update(Long itemId, ItemUpdateDTO itemUpdateDTO) {
         validateItemUpdateDTO(itemUpdateDTO);
         Item item = getItemByIdOrThrow(itemId);
-        applyChanges(item, itemUpdateDTO);
-        Item savedItem = itemRepo.save(item);
+        Item updatedItem = applyChanges(item, itemUpdateDTO);
+        Item savedItem = itemRepo.save(updatedItem);
         return itemMapper.toDTO(savedItem);
     }
 
@@ -137,10 +137,11 @@ public class DefaultItemService implements ItemService {
         }
     }
 
-    private void applyChanges(Item item, ItemUpdateDTO itemUpdateDTO) {
+    private Item applyChanges(Item item, ItemUpdateDTO itemUpdateDTO) {
         updateNameIfPresent(item, itemUpdateDTO.getName());
         updateKeywordsIfPresent(item, itemUpdateDTO.getKeywords());
         updateStorageIfChanged(item, itemUpdateDTO.getStorageId());
+        return item;
     }
 
     private void updateNameIfPresent(Item item, String name) {
