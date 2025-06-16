@@ -9,6 +9,7 @@ import org.bogacheva.training.service.dto.ItemDTO;
 import org.bogacheva.training.service.dto.StorageCreateDTO;
 import org.bogacheva.training.service.dto.StorageDTO;
 import org.bogacheva.training.service.dto.StorageUpdateDTO;
+import org.bogacheva.training.service.exceptions.InvalidStorageHierarchyException;
 import org.bogacheva.training.service.exceptions.StorageNotFoundException;
 import org.bogacheva.training.service.mapper.ItemMapper;
 import org.bogacheva.training.service.mapper.StorageMapper;
@@ -53,7 +54,7 @@ public class DefaultStorageService implements StorageService {
      *
      * @param storageCreateDTO The DTO containing storage details
      * @return The created storage as a DTO
-     * @throws IllegalArgumentException if parent-child relationship rules are violated
+     * @throws InvalidStorageHierarchyException if parent-child relationship rules are violated
      * @throws StorageNotFoundException if the specified parent storage doesn't exist
      */
     @Override
