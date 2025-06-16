@@ -9,7 +9,6 @@ import org.bogacheva.training.service.dto.ItemDTO;
 import org.bogacheva.training.service.dto.StorageCreateDTO;
 import org.bogacheva.training.service.dto.StorageDTO;
 import org.bogacheva.training.service.dto.StorageUpdateDTO;
-import org.bogacheva.training.service.exceptions.InvalidStorageHierarchyException;
 import org.bogacheva.training.service.exceptions.StorageNotFoundException;
 import org.bogacheva.training.service.mapper.ItemMapper;
 import org.bogacheva.training.service.mapper.StorageMapper;
@@ -37,12 +36,12 @@ public class DefaultStorageService implements StorageService {
     private final StorageRepository storageRepo;
     private final StorageMapper storageMapper;
     private final ItemMapper itemMapper;
-    private final StorageValidator validator;
+    private final StorageValidatorService validator;
 
     public DefaultStorageService(StorageRepository storageRepository,
                                  StorageMapper storageMapper,
                                  ItemMapper itemMapper,
-                                 StorageValidator validator) {
+                                 StorageValidatorService validator) {
         this.storageRepo = storageRepository;
         this.storageMapper = storageMapper;
         this.itemMapper = itemMapper;
@@ -61,6 +60,7 @@ public class DefaultStorageService implements StorageService {
     @Transactional
     public StorageDTO create(StorageCreateDTO storageCreateDTO) {
         log.debug("Creating new storage: {}", storageCreateDTO.getName());
+        validator.validateStorageCreation(storageCreateDTO);
         Storage newStorage = buildStorageFromDTO(storageCreateDTO);
         Storage storage = storageRepo.save(newStorage);
         log.info("Created new storage with ID: {}", storage.getId());
@@ -78,7 +78,8 @@ public class DefaultStorageService implements StorageService {
     @Transactional(readOnly = true)
     public StorageDTO getById(Long storageId) {
         log.debug("Fetching storage with ID: {}", storageId);
-        return storageMapper.toDTO(findStorageByIdOrThrow(storageId));
+        Storage storage = findStorageByIdOrThrow(storageId);
+        return storageMapper.toDTO(storage);
     }
 
     /**
@@ -120,7 +121,8 @@ public class DefaultStorageService implements StorageService {
     @Transactional(readOnly = true)
     public List<ItemDTO> getAllItemDTOs(Long storageId) {
         log.debug("Fetching all items for storage with ID: {}", storageId);
-        return itemMapper.toDTOList(getAllItems(storageId));
+        List<Item> items = getAllItems(storageId);
+        return itemMapper.toDTOList(items);
     }
 
     /**
@@ -156,11 +158,7 @@ public class DefaultStorageService implements StorageService {
                 storageId, targetStorageId);
         validator.validateNotNull(storageId, () -> new IllegalArgumentException("Storage ID cannot be null"));
         Storage storageToDelete = findStorageByIdOrThrow(storageId);
-        if (storageToDelete.getType() == StorageType.RESIDENCE) {
-            validator.validateNotNull(targetStorageId, () -> new InvalidStorageHierarchyException(
-                    "Target storage ID is required when deleting a RESIDENCE"));
-        }
-        Storage targetStorage = getTargetStorage(targetStorageId, storageToDelete.getParent());
+        Storage targetStorage = getTargetStorage(storageToDelete, targetStorageId);
 
         moveItems(storageToDelete, targetStorage);
         moveSubStorages(storageToDelete, targetStorage);
@@ -185,8 +183,8 @@ public class DefaultStorageService implements StorageService {
     public StorageDTO updateProperties(Long id, StorageUpdateDTO dto) {
         log.debug("Updating properties for storage ID: {}", id);
         Storage storage = findStorageByIdOrThrow(id);
-        Storage updatedStorage = applyChanges(storage, dto);
-        Storage savedUpdatedStorage = storageRepo.save(updatedStorage);
+        updateStorageProperties(storage, dto);
+        Storage savedUpdatedStorage = storageRepo.save(storage);
         log.info("Updated properties for storage ID: {}", id);
         return storageMapper.toDTO(savedUpdatedStorage);
     }
@@ -196,39 +194,37 @@ public class DefaultStorageService implements StorageService {
                 .orElseThrow(() -> new StorageNotFoundException(id));
     }
 
-    private Storage getTargetStorage(Long targetStorageId, Storage parent) {
-        if (targetStorageId == null) {
-            return parent;
+    private Storage getTargetStorage(Storage storageToDelete, Long targetStorageId) {
+        boolean isResidence = storageToDelete.getType() == StorageType.RESIDENCE;
+        if (isResidence && targetStorageId == null) {
+            throw new IllegalArgumentException("RESIDENCE storage must specify a target storage for contents");
         }
-        if (parent != null && targetStorageId.equals(parent.getId())) {
-            throw new IllegalArgumentException("Cannot move contents to the same storage that is being deleted");
+        if (targetStorageId != null) {
+            return findStorageByIdOrThrow(targetStorageId);
         }
-        return findStorageByIdOrThrow(targetStorageId);
+        return storageToDelete.getParent();
     }
 
     private Storage buildStorageFromDTO(StorageCreateDTO dto) {
-        validator.validateStorageCreation(dto);
-        Storage parent = null;
-        if (dto.getParentId() != null) {
-            parent = findStorageByIdOrThrow(dto.getParentId());
-            validator.validateHierarchySubStorageRules(parent, dto.getType());
+        Storage parent = dto.getParentId() != null
+                ? findStorageByIdOrThrow(dto.getParentId())
+                : null;
+        if (parent != null) {
+            validator.validateHierarchySubStorageRules(parent.getType(), dto.getType());
         }
         Storage newStorage = storageMapper.toEntity(dto);
         newStorage.setParent(parent);
         return newStorage;
     }
 
-    private Storage applyChanges(Storage storage, StorageUpdateDTO updateDTO) {
-        String newName = updateDTO.getName();
-        if (newName != null && !newName.trim().isEmpty()) {
-            storage.setName(newName);
+    private void updateStorageProperties(Storage storage, StorageUpdateDTO dto) {
+        if (dto.getName() != null && !dto.getName().trim().isEmpty()) {
+            storage.setName(dto.getName());
         }
-        StorageType newType = updateDTO.getType();
-        if (newType != null) {
-            validator.validateTypeUpdate(storage, newType);
-            storage.setType(newType);
+        if (dto.getType() != null) {
+            validator.validateTypeUpdate(storage, dto.getType());
+            storage.setType(dto.getType());
         }
-        return storage;
     }
 
     private List<Item> getAllItems(Long storageId) {

@@ -16,7 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -36,7 +35,7 @@ class StorageServiceTest {
     private DefaultStorageService storageService;
 
     @Mock
-    private StorageValidator validator;
+    private StorageValidatorService validator;
 
     @Test
     void create_shouldCallStorageRepo_WhenValidResidenceDTOProvided() {
