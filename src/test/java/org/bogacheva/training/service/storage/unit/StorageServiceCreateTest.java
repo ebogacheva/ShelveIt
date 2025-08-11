@@ -1,4 +1,4 @@
-package org.bogacheva.training.service.storage;
+package org.bogacheva.training.service.storage.unit;
 
 import org.bogacheva.training.domain.storage.Storage;
 import org.bogacheva.training.domain.storage.StorageType;
@@ -6,6 +6,7 @@ import org.bogacheva.training.service.dto.StorageCreateDTO;
 import org.bogacheva.training.service.dto.StorageDTO;
 import org.bogacheva.training.service.exceptions.InvalidStorageHierarchyException;
 import org.bogacheva.training.service.exceptions.StorageNotFoundException;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -18,6 +19,7 @@ import static org.mockito.Mockito.*;
 class StorageServiceCreateTest extends StorageServiceBaseTest {
 
     @Test
+    @DisplayName("Should return expected StorageDTO when valid StorageCreateDTO for RESIDENCE is provided")
     void create_shouldReturnStorageDTO_whenValidResidenceDTOProvided() {
         // Arrange
         StorageCreateDTO residenceDTO = createStorageCreateDTO("Residence", StorageType.RESIDENCE, null);
@@ -46,6 +48,7 @@ class StorageServiceCreateTest extends StorageServiceBaseTest {
     }
 
     @Test
+    @DisplayName("Should return expected StorageDTO when valid StorageCreateDTO for ROOM is provided")
     void create_shouldReturnStorageDTO_whenValidRoomDTOProvided() {
         // Arrange
         Long parentId = 1L;
@@ -81,6 +84,7 @@ class StorageServiceCreateTest extends StorageServiceBaseTest {
     }
 
     @Test
+    @DisplayName("Should throw InvalidStorageHierarchyException when ROOM is created without parent")
     void create_shouldThrowException_whenRoomCreateDTOWithNoParent() {
         // Arrange
         StorageCreateDTO invalidDTO = createStorageCreateDTO("Invalid", StorageType.ROOM, null);
@@ -101,6 +105,7 @@ class StorageServiceCreateTest extends StorageServiceBaseTest {
     }
 
     @Test
+    @DisplayName("Should throw InvalidStorageHierarchyException when RESIDENCE is created with parent")
     void create_shouldThrowException_whenResidenceCreateDTOWithParent() {
         // Arrange
         Long parentId = 1L;
@@ -122,6 +127,7 @@ class StorageServiceCreateTest extends StorageServiceBaseTest {
     }
 
     @Test
+    @DisplayName("Should throw StorageNotFoundException when parent storage with provided ID not found")
     void create_shouldThrowException_whenParentNotFound() {
         // Arrange
         Long nonExistentParentId = 999L;

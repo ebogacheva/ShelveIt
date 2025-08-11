@@ -1,6 +1,7 @@
 package org.bogacheva.training.service.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +18,7 @@ public class ItemCreateDTO {
     @NotBlank(message = "Item name cannot be empty")
     private String name;
 
-    @NotBlank(message = "Any storage should be specified")
+    @NotNull(message = "Any storage should be specified")
     private Long storageId;
 
     private List<String> keywords;

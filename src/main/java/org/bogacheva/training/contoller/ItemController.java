@@ -1,9 +1,11 @@
 package org.bogacheva.training.contoller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.bogacheva.training.service.dto.ItemCreateDTO;
 import org.bogacheva.training.service.dto.ItemUpdateDTO;
-import org.bogacheva.training.service.item.ItemService;
+import org.bogacheva.training.service.item.search.ItemSearchService;
+import org.bogacheva.training.service.item.crud.ItemService;
 import org.bogacheva.training.service.dto.ItemDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,37 +19,35 @@ import java.util.List;
 public class ItemController {
 
     private final ItemService itemService;
+    private final ItemSearchService itemSearchService;
 
     @PostMapping
-    public ResponseEntity<ItemDTO> create(@RequestBody ItemCreateDTO itemCreateDTO) {
+    public ResponseEntity<ItemDTO> create(@Valid @RequestBody ItemCreateDTO itemCreateDTO) {
         ItemDTO newItem = itemService.create(itemCreateDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(newItem);
     }
 
     @GetMapping
     public ResponseEntity<List<ItemDTO>> getAll() {
-        List<ItemDTO> items = itemService.getAll();
-        return ResponseEntity.ok(items);
+        return ResponseEntity.ok(itemService.getAll());
     }
 
     @GetMapping("/{itemId}")
     public ResponseEntity<ItemDTO> get(@PathVariable Long itemId) {
-        ItemDTO itemDTO = itemService.getById(itemId);
-        return ResponseEntity.ok(itemDTO);
+        return ResponseEntity.ok(itemService.getById(itemId));
     }
 
     @GetMapping("/search")
     public ResponseEntity<List<ItemDTO>> searchByKeywords(@RequestParam List<String> keywords) {
-        List<ItemDTO> items = itemService.findByKeywords(keywords);
+        List<ItemDTO> items = itemSearchService.searchItemsByKeywords(keywords);
         return ResponseEntity.ok(items);
     }
 
     @PutMapping("/{itemId}")
     public ResponseEntity<ItemDTO> update(
             @PathVariable Long itemId,
-            @RequestBody ItemUpdateDTO itemUpdateDTO) {
-        ItemDTO updated = itemService.update(itemId, itemUpdateDTO);
-        return ResponseEntity.ok(updated);
+            @Valid @RequestBody ItemUpdateDTO itemUpdateDTO) {
+        return ResponseEntity.ok(itemService.update(itemId, itemUpdateDTO));
     }
 
     @DeleteMapping("/{itemId}")
@@ -64,7 +64,7 @@ public class ItemController {
 
     @GetMapping("/{itemId}/trackStorages")
     public ResponseEntity<List<Long>> trackStorages(@PathVariable Long itemId) {
-        List<Long> storageIds = itemService.getStorageHierarchyIds(itemId);
+        List<Long> storageIds = itemSearchService.getStorageHierarchyIds(itemId);
         return ResponseEntity.ok(storageIds);
     }
 }

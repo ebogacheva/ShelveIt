@@ -1,4 +1,4 @@
-package org.bogacheva.training.service.item;
+package org.bogacheva.training.service.item.crud;
 
 import org.bogacheva.training.service.exceptions.InvalidItemOperationException;
 import org.bogacheva.training.service.exceptions.ItemNotFoundException;
@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class DefaultItemService implements ItemService {
@@ -37,6 +39,7 @@ public class DefaultItemService implements ItemService {
     public ItemDTO create(ItemCreateDTO itemCreateDTO) {
         Storage storage = getStorageByIdOrThrow(itemCreateDTO.getStorageId());
         Item newItem = itemMapper.toEntity(itemCreateDTO);
+        normalizeKeywords(newItem);
         newItem.setStorage(storage);
         Item savedItem = itemRepo.save(newItem);
         return itemMapper.toDTO(savedItem);
@@ -63,30 +66,13 @@ public class DefaultItemService implements ItemService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<ItemDTO> getByStorageId(Long storageId) {
-        getStorageByIdOrThrow(storageId);
-        List<Item> items = itemRepo.findItemsByStorageId(storageId);
-        return itemMapper.toDTOList(items);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ItemDTO> findByKeywords(List<String> keywords) {
-        if (keywords == null || keywords.isEmpty()) {
-            return getAll();
-        }
-        List<Item> items = itemRepo.findByAnyKeyword(keywords);
-        return itemMapper.toDTOList(items);
-    }
-
-    @Override
     @Transactional
     public ItemDTO update(Long itemId, ItemUpdateDTO itemUpdateDTO) {
         validateItemUpdateDTO(itemUpdateDTO);
         Item item = getItemByIdOrThrow(itemId);
-        Item updatedItem = applyChanges(item, itemUpdateDTO);
-        Item savedItem = itemRepo.save(updatedItem);
+        applyChanges(item, itemUpdateDTO);
+        normalizeKeywords(item);
+        Item savedItem = itemRepo.save(item);
         return itemMapper.toDTO(savedItem);
     }
 
@@ -98,15 +84,6 @@ public class DefaultItemService implements ItemService {
         validateNoneNullStorage(itemId, storage);
         List<Item> itemsNear = itemRepo.findItemsByStorageIdAndExcludeItemId(storage.getId(), itemId);
         return itemMapper.toDTOList(itemsNear);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Long> getStorageHierarchyIds(Long itemId) {
-        Item item = getItemByIdOrThrow(itemId);
-        Storage storage = item.getStorage();
-        validateNoneNullStorage(itemId, storage);
-        return itemRepo.findStorageHierarchyIds(itemId);
     }
 
     private Item getItemByIdOrThrow(Long itemId) {
@@ -135,38 +112,35 @@ public class DefaultItemService implements ItemService {
         if (itemUpdateDTO == null) {
             throw new IllegalArgumentException("ItemUpdateDTO must not be null.");
         }
+        boolean hasName = itemUpdateDTO.getName() != null;
+        boolean hasKeywords = itemUpdateDTO.getKeywords() != null;
+        boolean hasStorageId = itemUpdateDTO.getStorageId() != null;
+
+        if (!hasName && !hasKeywords && !hasStorageId) {
+            throw new IllegalArgumentException("At least one field must be provided for update.");
+        }
+        if (itemUpdateDTO.getName() != null && itemUpdateDTO.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Name, if provided, cannot be empty.");
+        }
     }
 
     private Item applyChanges(Item item, ItemUpdateDTO itemUpdateDTO) {
-        updateNameIfPresent(item, itemUpdateDTO.getName());
-        updateKeywordsIfPresent(item, itemUpdateDTO.getKeywords());
-        updateStorageIfChanged(item, itemUpdateDTO.getStorageId());
+        if (itemUpdateDTO.getName() != null) item.setName(itemUpdateDTO.getName());
+        if (itemUpdateDTO.getKeywords() != null) item.setKeywords(new ArrayList<>(itemUpdateDTO.getKeywords()));
+        if (itemUpdateDTO.getStorageId() != null && !itemUpdateDTO.getStorageId().equals(item.getStorage().getId())) {
+            item.setStorage(getStorageByIdOrThrow(itemUpdateDTO.getStorageId()));
+        }
         return item;
     }
 
-    private void updateNameIfPresent(Item item, String name) {
-        if (name != null && !name.trim().isEmpty()) {
-            item.setName(name);
-        }
-    }
-
-    private void updateKeywordsIfPresent(Item item, List<String> keywords) {
+    private void normalizeKeywords(Item item) {
+        List<String> keywords = item.getKeywords();
         if (keywords != null) {
-            List<String> newKeywords = new ArrayList<>(keywords);
-            item.setKeywords(newKeywords);
+            List<String> normalized = keywords.stream()
+                    .filter(Objects::nonNull)
+                    .map(String::toLowerCase)
+                    .collect(Collectors.toList());
+            item.setKeywords(normalized);
         }
-    }
-
-    private void updateStorageIfChanged(Item item, Long newStorageId) {
-        if (shouldUpdateStorage(item, newStorageId)) {
-            Storage newStorage = getStorageByIdOrThrow(newStorageId);
-            item.setStorage(newStorage);
-        }
-    }
-
-    private boolean shouldUpdateStorage(Item item, Long newStorageId) {
-        validateNoneNullStorage(item.getId(), item.getStorage());
-        return newStorageId != null &&
-                !item.getStorage().getId().equals(newStorageId);
     }
 }

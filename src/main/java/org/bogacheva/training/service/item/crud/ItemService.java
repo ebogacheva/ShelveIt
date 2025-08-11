@@ -1,4 +1,4 @@
-package org.bogacheva.training.service.item;
+package org.bogacheva.training.service.item.crud;
 
 import org.bogacheva.training.service.dto.ItemCreateDTO;
 import org.bogacheva.training.service.dto.ItemDTO;
@@ -15,13 +15,8 @@ public interface ItemService {
 
     void delete(Long itemId);
 
-    List<ItemDTO> getByStorageId(Long storageId);
-
-    List<ItemDTO> findByKeywords(List<String> keywords);
-
     ItemDTO update(Long itemId, ItemUpdateDTO itemUpdateDTO);
 
     List<ItemDTO> getItemsNear(Long itemId);
 
-    List<Long> getStorageHierarchyIds(Long itemId);
 }

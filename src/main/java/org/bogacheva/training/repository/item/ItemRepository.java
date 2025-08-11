@@ -64,5 +64,13 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     SELECT id FROM storage_hierarchy
     """, nativeQuery = true)
     List<Long> findStorageHierarchyIds(@Param("itemId") Long itemId);
-    // TODO: add stored procedure for this query
+
+    /**
+     * Finds all items whose names match the given pattern, ignoring case.
+     *
+     * @param pattern the search pattern for item names, case-insensitive, using SQL LIKE syntax
+     * @return a list of Item entities whose names match the pattern ignoring case
+     */
+    @Query("SELECT i FROM Item i WHERE LOWER(i.name) LIKE :pattern")
+    List<Item> findByNameLikeIgnoreCase(@Param("pattern") String pattern);
 }

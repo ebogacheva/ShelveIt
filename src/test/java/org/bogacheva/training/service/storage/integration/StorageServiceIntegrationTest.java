@@ -1,4 +1,4 @@
-package org.bogacheva.training.service.storage;
+package org.bogacheva.training.service.storage.integration;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
@@ -9,6 +9,7 @@ import org.bogacheva.training.repository.storage.StorageRepository;
 import org.bogacheva.training.service.dto.StorageCreateDTO;
 import org.bogacheva.training.service.dto.StorageDTO;
 import org.bogacheva.training.service.mapper.StorageMapper;
+import org.bogacheva.training.service.storage.StorageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

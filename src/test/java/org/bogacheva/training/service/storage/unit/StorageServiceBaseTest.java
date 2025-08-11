@@ -1,4 +1,4 @@
-package org.bogacheva.training.service.storage;
+package org.bogacheva.training.service.storage.unit;
 
 import org.bogacheva.training.domain.item.Item;
 import org.bogacheva.training.domain.storage.Storage;
@@ -10,6 +10,8 @@ import org.bogacheva.training.service.dto.StorageDTO;
 import org.bogacheva.training.service.dto.StorageUpdateDTO;
 import org.bogacheva.training.service.mapper.ItemMapper;
 import org.bogacheva.training.service.mapper.StorageMapper;
+import org.bogacheva.training.service.storage.DefaultStorageService;
+import org.bogacheva.training.service.storage.StorageValidatorService;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
