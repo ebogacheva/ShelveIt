@@ -10,5 +10,4 @@ public interface ShelveItView {
     <T> void  print(List<T> items);
     String readCommand();
     void printError(String message);
-
 }

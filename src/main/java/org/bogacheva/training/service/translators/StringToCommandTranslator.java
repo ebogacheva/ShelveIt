@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -18,45 +19,39 @@ public class StringToCommandTranslator implements Translator<String, BaseCommand
     private static final Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z0-9 ]+");
     private static final Pattern ID_PATTERN = Pattern.compile("\\d+");
 
-    private static final int COMMAND_0 = 0;
-    private static final int COMMAND_1 = 1;
-    private static final int STORAGE_NAME_START_INDEX = 3;
-    private static final int ITEM_NAME_START_INDEX = 2;
-    private static final int STORAGE_TYPE_INDEX = 2;
-    private static final int PARENT_ID_INDEX = 4;
-    private static final int STORAGE_ID_INDEX = 3;
-    private static final int REMOVE_ID_INDEX = 2;
+    private static final int MIN_ARGS_CREATE_STORAGE = 4;
+    private static final int MIN_ARGS_CREATE_ITEM = 5;
+    private static final int MIN_ARGS_REMOVE = 3;
+    private static final int MIN_ARGS_GET = 3;
+    private static final int MIN_ARGS_LIST = 2;
 
-    private static final int CREATE_STORAGE_ARGS = 4;
-    private static final int CREATE_ITEM_ARGS = 4;
-    private static final int REMOVE_ARGS = 3;
+    private static final int IDX_COMMAND_0 = 0;
+    private static final int IDX_COMMAND_1 = 1;
+
+    private static final int IDX_STORAGE_TYPE = 2;
+    private static final int IDX_STORAGE_NAME = 3;
+    private static final int IDX_PARENT_ID = 4;
+
+    private static final int IDX_ITEM_NAME = 2;
+    private static final int IDX_ITEM_STORAGE_ID = 3;
+    private static final int IDX_ITEM_KEYWORDS = 4;
+
+    private static final int IDX_REMOVE_ID = 2;
+    private static final int IDX_GET_ID = 2;
 
     @Override
     public BaseCommand translate(String input) {
         String[] parts = splitInParts(input);
-        CommandType command = CommandType.of(getCommand(parts));
+        CommandType command = parseCommandType(parts);
         return switch (command) {
-            case CREATE_STORAGE -> {
-                validateArgs(parts, CREATE_STORAGE_ARGS);
-                Long parentId = parseOptionalParentId(parts);
-                String name = validateName(getName(parts, STORAGE_NAME_START_INDEX));
-                StorageType type = validateType(parts[STORAGE_TYPE_INDEX]);
-                yield new CreateStorageCommand(name, type, parentId);
-            }
-            case CREATE_ITEM -> {
-                validateArgs(parts, CREATE_ITEM_ARGS);
-                String name = validateName(getName(parts, ITEM_NAME_START_INDEX));
-                Long storageId = validateId(parts[STORAGE_ID_INDEX]);
-                List<String> keywords = Arrays.stream(parts[4].split(","))
-                        .map(String::trim)
-                        .filter(s -> !s.isEmpty())
-                        .toList();
-                yield new CreateItemCommand(name, storageId, keywords);
-            }
-            case REMOVE_ITEM -> createRemoveCommand(parts, RemoveItemCommand::new);
-            case REMOVE_STORAGE -> createRemoveCommand(parts, RemoveStorageCommand::new);
-            case LIST_STORAGES -> new ListStorageCommand();
-            case LIST_ITEMS -> new ListItemCommand();
+            case CREATE_STORAGE -> parseCreateStorage(parts);
+            case CREATE_ITEM -> parseCreateItem(parts);
+            case REMOVE_ITEM -> parseRemoveItem(parts);
+            case REMOVE_STORAGE -> parseRemoveStorage(parts);
+            case GET_ITEM -> parseGetItemById(parts);
+            case GET_STORAGE -> parseGetStorageById(parts);
+            case LIST_STORAGES -> parseListStorages(parts);
+            case LIST_ITEMS -> parseListItems(parts);
             case EXIT -> new ExitCommand();
             default -> new BrokenCommand();
         };
@@ -71,23 +66,79 @@ public class StringToCommandTranslator implements Translator<String, BaseCommand
         return parts.toArray(new String[0]);
     }
 
-    private Long parseOptionalParentId(String[] parts) {
-        return (PARENT_ID_INDEX < parts.length) ? validateId(parts[PARENT_ID_INDEX]) : null;
+
+    private BaseCommand parseCreateStorage(String[] parts) {
+        final int expectedArgs = MIN_ARGS_CREATE_STORAGE;
+        validateArgs(parts, expectedArgs);
+        Long parentId = parseOptionalParentId(parts);
+        String name = validateName(parts[IDX_STORAGE_NAME]);
+        StorageType type = validateType(parts[IDX_STORAGE_TYPE]);
+        return new CreateStorageCommand(name, type, parentId);
     }
 
-    private BaseCommand createRemoveCommand(String[] parts, Function<Long, BaseCommand> constructor) {
-        validateArgs(parts, REMOVE_ARGS);
-        return constructor.apply(validateId(parts[REMOVE_ID_INDEX]));
+    private BaseCommand parseCreateItem(String[] parts) {
+        final int expectedArgs = MIN_ARGS_CREATE_ITEM;
+        validateArgs(parts, expectedArgs);
+        String name = validateName(parts[IDX_ITEM_NAME]);
+        Long storageId = validateId(parts[IDX_ITEM_STORAGE_ID]);
+        List<String> keywords = parseKeywords(parts[IDX_ITEM_KEYWORDS]);
+        return new CreateItemCommand(name, storageId, keywords);
+    }
+
+    private BaseCommand parseRemoveItem(String[] parts) {
+        final int expectedArgs = MIN_ARGS_REMOVE;
+        validateArgs(parts, expectedArgs);
+        long id = validateId(parts[IDX_REMOVE_ID]);
+        return new RemoveItemCommand(id);
+    }
+
+    private BaseCommand parseRemoveStorage(String[] parts) {
+        final int expectedArgs = MIN_ARGS_REMOVE;
+        validateArgs(parts, expectedArgs);
+        long id = validateId(parts[IDX_REMOVE_ID]);
+        return new RemoveStorageCommand(id);
+    }
+
+    private BaseCommand parseGetItemById(String[] parts) {
+        validateArgs(parts, MIN_ARGS_GET);
+        long id = validateId(parts[IDX_GET_ID]);
+        return new GetItemByIdCommand(id);
+    }
+
+    private BaseCommand parseGetStorageById(String[] parts) {
+        validateArgs(parts, MIN_ARGS_GET);
+        long id = validateId(parts[IDX_GET_ID]);
+        return new GetStorageByIdCommand(id);
+    }
+
+    private BaseCommand parseListStorages(String[] parts) {
+        validateArgs(parts, MIN_ARGS_LIST);
+        return new ListStorageCommand();
+    }
+
+    private BaseCommand parseListItems(String[] parts) {
+        validateArgs(parts, MIN_ARGS_LIST);
+        return new ListItemCommand();
+    }
+
+    private List<String> parseKeywords(String keywordsStr) {
+        if (keywordsStr == null || keywordsStr.isBlank()) {
+            return Collections.emptyList();
+        }
+        return Arrays.stream(keywordsStr.split("[,\\s]+"))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
+    }
+
+    private Long parseOptionalParentId(String[] parts) {
+        return (IDX_PARENT_ID < parts.length) ? validateId(parts[IDX_PARENT_ID]) : null;
     }
 
     private void validateArgs(String[] parts, int expected) {
         if (parts.length < expected) {
             throw new IllegalArgumentException("Invalid number of arguments!");
         }
-    }
-
-    private String getName(String[] parts, int startIndex) {
-        return parts[startIndex];
     }
 
     private String validateName(String name) {
@@ -108,13 +159,20 @@ public class StringToCommandTranslator implements Translator<String, BaseCommand
         throw new IllegalArgumentException("Invalid ID: " + id);
     }
 
-    private String getCommand(String[] parts) {
-        if (parts == null || parts.length == 0) {
-            return "";
+    private CommandType parseCommandType(String[] parts) {
+        if (parts.length == 0) {
+            return CommandType.BROKEN;
         }
+        String cmd;
         if (parts.length > 1) {
-            return parts[COMMAND_0] + "_" + parts[COMMAND_1];
+            cmd = (parts[IDX_COMMAND_0] + "_" + parts[IDX_COMMAND_1]).toUpperCase();
+        } else {
+            cmd = parts[IDX_COMMAND_0].toUpperCase();
         }
-        return parts[COMMAND_0];
+        try {
+            return CommandType.valueOf(cmd);
+        } catch (IllegalArgumentException e) {
+            return CommandType.BROKEN;
+        }
     }
 }

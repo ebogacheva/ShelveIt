@@ -6,8 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Arrays;
 import java.util.List;
 
-import jakarta.transaction.Transactional;
-
 import org.bogacheva.training.ShelveItCommandLineRunner;
 import org.bogacheva.training.domain.item.Item;
 import org.bogacheva.training.domain.storage.Storage;
