@@ -1,6 +1,5 @@
 package org.bogacheva.training.view.commands;
 
-import lombok.Getter;
 import org.bogacheva.training.service.dto.ItemCreateDTO;
 
 import java.util.List;

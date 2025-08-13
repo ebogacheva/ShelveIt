@@ -15,6 +15,7 @@ import org.bogacheva.training.service.dto.ItemDTO;
 import org.bogacheva.training.service.exceptions.StorageNotFoundException;
 import org.bogacheva.training.service.item.search.DefaultItemSearchService;
 import org.bogacheva.training.service.mapper.ItemMapper;
+import org.bogacheva.training.service.testdb.AbstractPostgresIT;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,21 +32,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SpringBootTest
 @Testcontainers
 @ActiveProfiles("test")
-class ItemSearchIntegrationTest {
-
-    @Container
-    public static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15.3")
-            .withDatabaseName("testdb")
-            .withUsername("test")
-            .withPassword("test");
-
-    @DynamicPropertySource
-    static void postgresProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-        registry.add("spring.datasource.driver-class-name", postgres::getDriverClassName);
-    }
+class ItemSearchIntegrationTest extends AbstractPostgresIT {
 
     @MockitoBean
     private ShelveItCommandLineRunner commandLineRunner;

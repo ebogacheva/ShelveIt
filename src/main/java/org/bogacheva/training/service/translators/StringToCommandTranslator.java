@@ -24,6 +24,7 @@ public class StringToCommandTranslator implements Translator<String, BaseCommand
     private static final int MIN_ARGS_REMOVE = 3;
     private static final int MIN_ARGS_GET = 3;
     private static final int MIN_ARGS_LIST = 2;
+    private static final int MIN_ARGS_SEARCH = 3;
 
     private static final int IDX_COMMAND_0 = 0;
     private static final int IDX_COMMAND_1 = 1;
@@ -50,6 +51,8 @@ public class StringToCommandTranslator implements Translator<String, BaseCommand
             case REMOVE_STORAGE -> parseRemoveStorage(parts);
             case GET_ITEM -> parseGetItemById(parts);
             case GET_STORAGE -> parseGetStorageById(parts);
+            case SEARCH_ITEMS -> parseSearchItems(parts);
+            case SEARCH_ITEMS_BY_KEYWORD -> parseSearchItemsByKeyword(parts);
             case LIST_STORAGES -> parseListStorages(parts);
             case LIST_ITEMS -> parseListItems(parts);
             case EXIT -> new ExitCommand();
@@ -109,6 +112,18 @@ public class StringToCommandTranslator implements Translator<String, BaseCommand
         validateArgs(parts, MIN_ARGS_GET);
         long id = validateId(parts[IDX_GET_ID]);
         return new GetStorageByIdCommand(id);
+    }
+
+    private BaseCommand parseSearchItems(String[] parts) {
+        validateArgs(parts, MIN_ARGS_SEARCH);
+        String searchTerm = parts[2];
+        return new SearchItemsCommand(searchTerm);
+    }
+
+    private BaseCommand parseSearchItemsByKeyword(String[] parts) {
+        validateArgs(parts, MIN_ARGS_SEARCH);
+        String keyword = parts[2];
+        return new SearchItemsByKeywordsCommand(keyword);
     }
 
     private BaseCommand parseListStorages(String[] parts) {

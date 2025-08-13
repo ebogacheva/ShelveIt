@@ -1,6 +1,7 @@
 package org.bogacheva.training.repository.storage;
 
 import org.bogacheva.training.domain.storage.Storage;
+import org.bogacheva.training.domain.storage.StorageType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,4 +17,13 @@ public interface StorageRepository extends JpaRepository<Storage, Long> {
     // Partial, case-insensitive name search for Storage
     @Query("SELECT s FROM Storage s WHERE LOWER(s.name) LIKE :pattern")
     List<Storage> findByNameLikeIgnoreCase(@Param("pattern") String pattern);
+
+    // Finds all storages of a specific type
+    List<Storage> findByType(StorageType type);
+
+    // Finds all storages with names containing the specified string, case-insensitive
+    List<Storage> findByNameContainingIgnoreCase(String name);
+
+    // Finds all storages with names containing the specified string, case-insensitive, and of a specific type
+    List<Storage> findByNameContainingIgnoreCaseAndType(String name, StorageType type);
 }

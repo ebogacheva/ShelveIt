@@ -9,6 +9,8 @@ public enum CommandType {
     LIST_ITEMS,
     LIST_SUBSTORAGES,
     ITEMS_BY_STORAGE,
+    SEARCH_ITEMS,
+    SEARCH_ITEMS_BY_KEYWORD,
     GET_ITEM,
     GET_STORAGE,
     EXIT,

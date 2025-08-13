@@ -79,7 +79,7 @@ public class StorageServiceRetrievalTest extends StorageServiceBaseTest {
         when(storageMapper.toDTOList(storages)).thenReturn(expectedDTOs);
 
         // Act
-        List<StorageDTO> results = storageService.getAll();
+        List<StorageDTO> results = storageService.getAll(null);
 
         // Assert
         assertNotNull(results);

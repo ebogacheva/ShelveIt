@@ -40,7 +40,7 @@ public class StorageServiceUpdateTest extends StorageServiceBaseTest {
         when(storageMapper.toDTO(any(Storage.class))).thenReturn(expectedDTO);
 
         // Act
-        StorageDTO result = storageService.updateProperties(storageId, updateDTO);
+        StorageDTO result = storageService.update(storageId, updateDTO);
 
         // Assert
         assertNotNull(result);
@@ -77,7 +77,7 @@ public class StorageServiceUpdateTest extends StorageServiceBaseTest {
         when(storageMapper.toDTO(any(Storage.class))).thenReturn(expectedDTO);
 
         // Act
-        StorageDTO result = storageService.updateProperties(storageId, updateDTO);
+        StorageDTO result = storageService.update(storageId, updateDTO);
 
         // Assert
         assertNotNull(result);
@@ -103,7 +103,7 @@ public class StorageServiceUpdateTest extends StorageServiceBaseTest {
         // Act & Assert
         StorageNotFoundException exception = assertThrows(
                 StorageNotFoundException.class,
-                () -> storageService.updateProperties(nonExistentId, updateDTO));
+                () -> storageService.update(nonExistentId, updateDTO));
 
         assertEquals("Storage with ID: 999 was not found.", exception.getMessage());
 
@@ -133,7 +133,7 @@ public class StorageServiceUpdateTest extends StorageServiceBaseTest {
         // Act & Assert
         InvalidStorageHierarchyException exception = assertThrows(
                 InvalidStorageHierarchyException.class,
-                () -> storageService.updateProperties(storageId, updateDTO));
+                () -> storageService.update(storageId, updateDTO));
 
         assertEquals("ROOM storage requires a parent", exception.getMessage());
 
