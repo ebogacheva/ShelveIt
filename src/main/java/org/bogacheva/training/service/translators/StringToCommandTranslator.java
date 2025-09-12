@@ -12,6 +12,10 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Translates raw user input strings into BaseCommand objects.
+ * Supports validation of names, IDs, types, and keyword parsing.
+ */
 @Component
 public class StringToCommandTranslator implements Translator<String, BaseCommand> {
 
@@ -25,9 +29,8 @@ public class StringToCommandTranslator implements Translator<String, BaseCommand
     private static final int MIN_ARGS_GET = 3;
     private static final int MIN_ARGS_LIST = 2;
     private static final int MIN_ARGS_SEARCH = 3;
-
-    private static final int IDX_COMMAND_0 = 0;
-    private static final int IDX_COMMAND_1 = 1;
+    private static final int MIN_ARGS_LIST_SUBSTORAGES = 3;
+    private static final int MIN_ARGS_GET_ITEMS_BY_STORAGE = 5;
 
     private static final int IDX_STORAGE_TYPE = 2;
     private static final int IDX_STORAGE_NAME = 3;
@@ -39,6 +42,7 @@ public class StringToCommandTranslator implements Translator<String, BaseCommand
 
     private static final int IDX_REMOVE_ID = 2;
     private static final int IDX_GET_ID = 2;
+    private static final int IDX_GET_BY_STORAGE_ID = 4;
 
     @Override
     public BaseCommand translate(String input) {
@@ -55,6 +59,8 @@ public class StringToCommandTranslator implements Translator<String, BaseCommand
             case SEARCH_ITEMS_BY_KEYWORD -> parseSearchItemsByKeyword(parts);
             case LIST_STORAGES -> parseListStorages(parts);
             case LIST_ITEMS -> parseListItems(parts);
+            case LIST_SUBSTORAGES -> parseListSubStorages(parts);
+            case GET_ITEMS_BY_STORAGE -> parseGetItemsByStorageId(parts);
             case EXIT -> new ExitCommand();
             default -> new BrokenCommand();
         };
@@ -69,6 +75,17 @@ public class StringToCommandTranslator implements Translator<String, BaseCommand
         return parts.toArray(new String[0]);
     }
 
+    private BaseCommand parseListSubStorages(String[] parts) {
+        validateArgs(parts, MIN_ARGS_LIST_SUBSTORAGES);
+        long storageId = validateId(parts[IDX_GET_ID]);
+        return new ListSubStoragesCommand(storageId);
+    }
+
+    private BaseCommand parseGetItemsByStorageId(String[] parts) {
+        validateArgs(parts, MIN_ARGS_GET_ITEMS_BY_STORAGE);
+        long storageId = validateId(parts[IDX_GET_BY_STORAGE_ID]);
+        return new GetItemsByStorageCommand(storageId);
+    }
 
     private BaseCommand parseCreateStorage(String[] parts) {
         final int expectedArgs = MIN_ARGS_CREATE_STORAGE;
@@ -178,16 +195,16 @@ public class StringToCommandTranslator implements Translator<String, BaseCommand
         if (parts.length == 0) {
             return CommandType.BROKEN;
         }
-        String cmd;
-        if (parts.length > 1) {
-            cmd = (parts[IDX_COMMAND_0] + "_" + parts[IDX_COMMAND_1]).toUpperCase();
-        } else {
-            cmd = parts[IDX_COMMAND_0].toUpperCase();
+        for (int len = parts.length; len > 0; len--) {
+            String cmdCandidate = String.join("_", Arrays.copyOfRange(parts, 0, len))
+                    .toUpperCase();
+
+            try {
+                return CommandType.valueOf(cmdCandidate);
+            } catch (IllegalArgumentException ignored) {
+                // try shorter prefix
+            }
         }
-        try {
-            return CommandType.valueOf(cmd);
-        } catch (IllegalArgumentException e) {
-            return CommandType.BROKEN;
-        }
+        return CommandType.BROKEN;
     }
 }

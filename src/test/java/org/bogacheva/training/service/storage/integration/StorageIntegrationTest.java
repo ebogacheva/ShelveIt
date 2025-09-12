@@ -1,17 +1,15 @@
 package org.bogacheva.training.service.storage.integration;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query;
-import jakarta.persistence.metamodel.Metamodel;
-import jakarta.transaction.Transactional;
 import org.bogacheva.training.ShelveItCommandLineRunner;
+import org.bogacheva.training.domain.item.Item;
 import org.bogacheva.training.domain.storage.Storage;
 import org.bogacheva.training.domain.storage.StorageType;
+import org.bogacheva.training.repository.item.ItemRepository;
 import org.bogacheva.training.repository.storage.StorageRepository;
+import org.bogacheva.training.service.dto.ItemDTO;
 import org.bogacheva.training.service.dto.StorageCreateDTO;
 import org.bogacheva.training.service.dto.StorageDTO;
 import org.bogacheva.training.service.dto.StorageUpdateDTO;
-import org.bogacheva.training.service.mapper.StorageMapper;
 import org.bogacheva.training.service.storage.StorageService;
 import org.bogacheva.training.service.testdb.AbstractPostgresIT;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,11 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
@@ -44,17 +38,26 @@ public class StorageIntegrationTest extends AbstractPostgresIT {
     @Autowired
     private StorageRepository storageRepository;
 
-    private Storage home;
+    @Autowired
+    private ItemRepository itemRepository;
+
+    private Storage kitchen, fridge, home;
+    private Item milk, bread;
 
     @BeforeEach
     void setUp() {
+        itemRepository.deleteAll();
         storageRepository.deleteAll();
+
         home = storageRepository.save(new Storage("Home", StorageType.RESIDENCE, null));
         Storage room = new Storage("Living Room", StorageType.ROOM, home);
         Storage bedroom = new Storage("Bedroom", StorageType.ROOM, home);
-        Storage kitchen = new Storage("Kitchen", StorageType.ROOM, home);
-        Storage fridge = new Storage("Fridge", StorageType.FURNITURE, kitchen);
+        kitchen = new Storage("Kitchen", StorageType.ROOM, home);
+        fridge = new Storage("Fridge", StorageType.FURNITURE, kitchen);
         storageRepository.saveAll(List.of(room, bedroom, kitchen, fridge));
+
+        milk = itemRepository.save(new Item("Milk", fridge));
+        bread = itemRepository.save(new Item("Bread", fridge));
     }
 
     @Test
@@ -64,6 +67,55 @@ public class StorageIntegrationTest extends AbstractPostgresIT {
                 .hasSize(5)
                 .extracting(StorageDTO::getName)
                 .containsExactlyInAnyOrder("Living Room", "Bedroom", "Fridge", "Kitchen", "Home");
+    }
+
+    @Test
+    void getSubStorages_shouldReturnImmediateChildren() {
+        List<StorageDTO> subStorages = storageService.getSubStorages(home.getId());
+
+        assertThat(subStorages)
+                .hasSize(3)
+                .extracting(StorageDTO::getName)
+                .containsExactlyInAnyOrder("Living Room", "Bedroom", "Kitchen");
+    }
+
+    @Test
+    void getAllItemDTOs_shouldReturnAllItemsRecursively() {
+        List<ItemDTO> allItems = storageService.getAllItemDTOs(home.getId());
+
+        assertThat(allItems)
+                .hasSize(2)
+                .extracting(ItemDTO::getName)
+                .containsExactlyInAnyOrder("Milk", "Bread");
+    }
+
+    @Test
+    void addItems_shouldAssociateItemsWithStorage() {
+
+        StorageDTO garage = storageService.create(new StorageCreateDTO("Garage", StorageType.ROOM, home.getId()));
+
+
+        Item hammer = itemRepository.save(new Item("Car #1", home));
+        Item wrench = itemRepository.save(new Item("Car #2", home));
+
+        StorageDTO updated = storageService.addItems(garage.getId(), List.of(hammer.getId(), wrench.getId()));
+
+        assertThat(updated.getItems()).hasSize(2);
+        assertThat(itemRepository.findById(hammer.getId()).get().getStorage().getId())
+                .isEqualTo(garage.getId());
+        assertThat(itemRepository.findById(wrench.getId()).get().getStorage().getId())
+                .isEqualTo(garage.getId());
+    }
+
+    @Test
+    void removeItems_shouldUnlinkItemsFromStorage() {
+        StorageDTO updated = storageService.removeItems(fridge.getId(), List.of(milk.getId()));
+
+        assertThat(updated.getItems())
+                .doesNotContain(milk.getId())
+                .contains(bread.getId());
+
+        assertThat(itemRepository.findById(milk.getId()).isEmpty());
     }
 
     @Test
@@ -93,22 +145,20 @@ public class StorageIntegrationTest extends AbstractPostgresIT {
 
     @Test
     void update_shouldModifyExistingStorage() {
-        StorageDTO storage = storageService.searchByNameAndType("Fridge", null).get(0);
 
         StorageUpdateDTO updateDTO = new StorageUpdateDTO();
         updateDTO.setName("Kitchen Fridge");
 
-        StorageDTO updated = storageService.update(storage.getId(), updateDTO);
+        StorageDTO updated = storageService.update(fridge.getId(), updateDTO);
 
         assertThat(updated.getName()).isEqualTo("Kitchen Fridge");
     }
 
     @Test
     void delete_shouldRemoveStorage() {
-        StorageDTO storage = storageService.searchByNameAndType("Fridge", null).get(0);
+        storageService.delete(fridge.getId());
 
-        storageService.delete(storage.getId());
-
-        assertThat(storageRepository.findById(storage.getId())).isEmpty();
+        assertThat(storageRepository.findById(fridge.getId())).isEmpty();
+        assertThat(itemRepository.findAll()).isEmpty();
     }
 }

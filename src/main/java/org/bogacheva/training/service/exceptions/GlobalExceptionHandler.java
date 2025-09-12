@@ -17,19 +17,19 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(StorageNotFoundException.class)
     public ResponseEntity<ShelveItError> handle(StorageNotFoundException ex) {
         log.error("Storage not found: {}", ex.getMessage());
-        return buildShelveItErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+        return buildShelveItErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage(), ex.getClass().getName());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ShelveItError> handle(IllegalArgumentException ex) {
         log.error("Invalid argument: {}", ex.getMessage());
-        return buildShelveItErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+        return buildShelveItErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), ex.getClass().getName());
     }
 
     @ExceptionHandler(InvalidStorageHierarchyException.class)
     public ResponseEntity<ShelveItError> handle(InvalidStorageHierarchyException ex) {
         log.error("Invalid storage hierarchy: {}", ex.getMessage());
-        return buildShelveItErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+        return buildShelveItErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), ex.getClass().getName());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
 
         String errorMessage = "Validation failed: " + String.join(", ", errors);
         log.error(errorMessage);
-        return buildShelveItErrorResponse(HttpStatus.BAD_REQUEST, errorMessage);
+        return buildShelveItErrorResponse(HttpStatus.BAD_REQUEST, errorMessage, ex.getClass().getName());
     }
 
     @ExceptionHandler(Exception.class)
@@ -50,16 +50,18 @@ public class GlobalExceptionHandler {
         log.error("Unhandled exception occurred", ex);
         return buildShelveItErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                "An unexpected error occurred."
+                "An unexpected error occurred.",
+                ex.getClass().getName()
         );
     }
 
-    private ResponseEntity<ShelveItError> buildShelveItErrorResponse(HttpStatus status, String message) {
+    private ResponseEntity<ShelveItError> buildShelveItErrorResponse(HttpStatus status, String message, String exClassName) {
         ShelveItError shelveItError = new ShelveItError(
                 status.value(),
                 status.getReasonPhrase(),
                 message,
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                exClassName
         );
         return new ResponseEntity<>(shelveItError, status);
     }

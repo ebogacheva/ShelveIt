@@ -2,6 +2,10 @@ package org.bogacheva.training.view;
 
 import java.util.List;
 
+/**
+ * View interface for console input/output.
+ * Defines methods to print messages, errors, lists, and read user input.
+ */
 public interface ShelveItView {
 
     void printHeader();

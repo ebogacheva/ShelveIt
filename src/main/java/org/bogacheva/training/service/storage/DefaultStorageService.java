@@ -71,6 +71,12 @@ public class DefaultStorageService implements StorageService {
         return storageMapper.toDTO(storage);
     }
 
+    /**
+     * Retrieves all storages optionally filtered by type.
+     *
+     * @param type the storage type to filter by, or null to return all
+     * @return list of StorageDTOs
+     */
     @Override
     @Transactional(readOnly = true)
     public List<StorageDTO> getAll(StorageType type) {
@@ -101,6 +107,12 @@ public class DefaultStorageService implements StorageService {
         log.info("Deleted storage with ID: {}", storageId);
     }
 
+    /**
+     * Retrieves all items associated with a storage and its sub-storages recursively.
+     *
+     * @param storageId the storage ID
+     * @return list of ItemDTOs
+     */
     @Override
     @Transactional(readOnly = true)
     public List<ItemDTO> getAllItemDTOs(Long storageId) {
@@ -109,6 +121,13 @@ public class DefaultStorageService implements StorageService {
         return itemMapper.toDTOList(items);
     }
 
+    /**
+     * Retrieves all direct sub-storages of a parent storage.
+     *
+     * @param parentId the parent storage ID
+     * @return list of StorageDTOs
+     * @throws StorageNotFoundException if parent storage does not exist
+     */
     @Override
     @Transactional(readOnly = true)
     public List<StorageDTO> getSubStorages(Long parentId) {

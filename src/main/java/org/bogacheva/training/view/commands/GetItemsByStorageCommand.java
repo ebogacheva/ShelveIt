@@ -8,7 +8,7 @@ public class GetItemsByStorageCommand extends BaseCommand {
     private final long storageId;
 
     public GetItemsByStorageCommand(long id) {
-        super(CommandType.ITEMS_BY_STORAGE);
+        super(CommandType.GET_ITEMS_BY_STORAGE);
         this.storageId = id;
     }
 }
