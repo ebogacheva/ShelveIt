@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public class RemoveStorageCommand extends BaseCommand {
 
-    private final long id;
+    private final Long id;
 
     public RemoveStorageCommand(long id) {
         super(CommandType.REMOVE_STORAGE);

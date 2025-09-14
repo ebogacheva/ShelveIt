@@ -4,11 +4,7 @@ import org.bogacheva.training.domain.storage.StorageType;
 import org.bogacheva.training.view.commands.*;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Function;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,46 +19,41 @@ public class StringToCommandTranslator implements Translator<String, BaseCommand
     private static final Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z0-9 ]+");
     private static final Pattern ID_PATTERN = Pattern.compile("\\d+");
 
-    private static final int MIN_ARGS_CREATE_STORAGE = 4;
-    private static final int MIN_ARGS_CREATE_ITEM = 5;
-    private static final int MIN_ARGS_REMOVE = 3;
-    private static final int MIN_ARGS_GET = 3;
-    private static final int MIN_ARGS_LIST = 2;
-    private static final int MIN_ARGS_SEARCH = 3;
-    private static final int MIN_ARGS_LIST_SUBSTORAGES = 3;
-    private static final int MIN_ARGS_GET_ITEMS_BY_STORAGE = 5;
-
-    private static final int IDX_STORAGE_TYPE = 2;
-    private static final int IDX_STORAGE_NAME = 3;
-    private static final int IDX_PARENT_ID = 4;
-
-    private static final int IDX_ITEM_NAME = 2;
-    private static final int IDX_ITEM_STORAGE_ID = 3;
-    private static final int IDX_ITEM_KEYWORDS = 4;
-
-    private static final int IDX_REMOVE_ID = 2;
-    private static final int IDX_GET_ID = 2;
-    private static final int IDX_GET_BY_STORAGE_ID = 4;
-
     @Override
     public BaseCommand translate(String input) {
-        String[] parts = splitInParts(input);
-        CommandType command = parseCommandType(parts);
-        return switch (command) {
-            case CREATE_STORAGE -> parseCreateStorage(parts);
-            case CREATE_ITEM -> parseCreateItem(parts);
-            case REMOVE_ITEM -> parseRemoveItem(parts);
-            case REMOVE_STORAGE -> parseRemoveStorage(parts);
-            case GET_ITEM -> parseGetItemById(parts);
-            case GET_STORAGE -> parseGetStorageById(parts);
-            case SEARCH_ITEMS -> parseSearchItems(parts);
-            case SEARCH_ITEMS_BY_KEYWORD -> parseSearchItemsByKeyword(parts);
-            case LIST_STORAGES -> parseListStorages(parts);
-            case LIST_ITEMS -> parseListItems(parts);
-            case LIST_SUBSTORAGES -> parseListSubStorages(parts);
-            case GET_ITEMS_BY_STORAGE -> parseGetItemsByStorageId(parts);
-            case EXIT -> new ExitCommand();
-            default -> new BrokenCommand();
+        try {
+            String[] parts = splitInParts(input);
+            CommandType commandType = parseCommandType(parts);
+            int start = getArgsStartIndex(commandType);
+            Map<String, String> args = parseArguments(Arrays.copyOfRange(parts, start, parts.length));
+
+            return switch (commandType) {
+                case CREATE_STORAGE -> parseCreateStorage(args);
+                case CREATE_ITEM -> parseCreateItem(args);
+                case REMOVE_ITEM -> parseRemoveItem(args);
+                case REMOVE_STORAGE -> parseRemoveStorage(args);
+                case GET_ITEM -> parseGetItemById(args);
+                case GET_STORAGE -> parseGetStorageById(args);
+                case SEARCH_ITEM -> parseSearchItem(args);
+                case LIST_STORAGES -> parseListStorages(args);
+                case LIST_ITEMS -> parseListItems(args);
+                case LIST_SUBSTORAGES -> parseListSubStorages(args);
+                case GET_ITEMS_BY_STORAGE -> parseGetItemsByStorageId(args);
+                case GET_ITEMS_NEAR -> parseGetItemsNear(args);
+                case TRACK_STORAGES -> parseTrackStorages(args);
+                case EXIT -> new ExitCommand();
+                default -> new BrokenCommand("Unknown command type.");
+            };
+        } catch (Exception e) {
+            return new BrokenCommand(e.getMessage());
+        }
+    }
+
+    private int getArgsStartIndex(CommandType commandType) {
+        return switch (commandType) {
+            case GET_ITEMS_BY_STORAGE -> 4;
+            case GET_ITEMS_NEAR -> 3;
+            default -> 2;
         };
     }
 
@@ -70,87 +61,130 @@ public class StringToCommandTranslator implements Translator<String, BaseCommand
         List<String> parts = new ArrayList<>();
         Matcher m = WHOLE_COMMAND_PATTERN.matcher(input);
         while (m.find()) {
+            // For quoted strings, use group 1; otherwise, use group 2
             parts.add(m.group(1) != null ? m.group(1) : m.group(2));
         }
         return parts.toArray(new String[0]);
     }
 
-    private BaseCommand parseListSubStorages(String[] parts) {
-        validateArgs(parts, MIN_ARGS_LIST_SUBSTORAGES);
-        long storageId = validateId(parts[IDX_GET_ID]);
-        return new ListSubStoragesCommand(storageId);
+    private CommandType parseCommandType(String[] parts) {
+        if (parts.length == 0) {
+            return CommandType.BROKEN;
+        }
+        if (parts.length == 1) {
+            return CommandType.of(parts[0]);
+        }
+        String cmdCandidate = (parts[0] + "_" + parts[1]).toUpperCase();
+        return getCommandType(parts, cmdCandidate);
     }
 
-    private BaseCommand parseGetItemsByStorageId(String[] parts) {
-        validateArgs(parts, MIN_ARGS_GET_ITEMS_BY_STORAGE);
-        long storageId = validateId(parts[IDX_GET_BY_STORAGE_ID]);
-        return new GetItemsByStorageCommand(storageId);
+    private CommandType getCommandType(String[] parts, String cmdCandidate) {
+        if ("GET_ITEMS".equals(cmdCandidate)) {
+            if (parts.length > 3 && parts[2].equalsIgnoreCase("by") && parts[3].equalsIgnoreCase("storage")) {
+                return CommandType.of(cmdCandidate + "_BY_STORAGE");
+            }
+            if (parts.length > 2 && parts[2].equalsIgnoreCase("near")) {
+                return CommandType.GET_ITEMS_NEAR;
+            }
+        }
+        return CommandType.of(cmdCandidate);
     }
 
-    private BaseCommand parseCreateStorage(String[] parts) {
-        final int expectedArgs = MIN_ARGS_CREATE_STORAGE;
-        validateArgs(parts, expectedArgs);
-        Long parentId = parseOptionalParentId(parts);
-        String name = validateName(parts[IDX_STORAGE_NAME]);
-        StorageType type = validateType(parts[IDX_STORAGE_TYPE]);
-        return new CreateStorageCommand(name, type, parentId);
+    private Map<String, String> parseArguments(String[] parts) {
+        Map<String, String> args = new HashMap<>();
+        String currentKey = null;
+
+        for (String part : parts) {
+            if (part.startsWith("--")) {
+                currentKey = part.substring(2).toLowerCase(); // Remove "--" prefix
+                args.put(currentKey, ""); // Initialize with empty value
+            } else if (currentKey != null) {
+                args.put(currentKey, args.get(currentKey).isEmpty()
+                        ? part.trim()
+                        : args.get(currentKey) + " " + part.trim());
+            } else {
+                throw new IllegalArgumentException("Unexpected argument: " + part);
+            }
+        }
+        return args;
     }
 
-    private BaseCommand parseCreateItem(String[] parts) {
-        final int expectedArgs = MIN_ARGS_CREATE_ITEM;
-        validateArgs(parts, expectedArgs);
-        String name = validateName(parts[IDX_ITEM_NAME]);
-        Long storageId = validateId(parts[IDX_ITEM_STORAGE_ID]);
-        List<String> keywords = parseKeywords(parts[IDX_ITEM_KEYWORDS]);
+    private BaseCommand parseCreateStorage(Map<String, String> args) {
+        validateRequiredArgs(args, "type", "name");
+        String type = validateType(args.get("type").toUpperCase());
+        String name = validateName(args.get("name"));
+        Long parentId = args.containsKey("parent") ? validateId(args.get("parent")) : null;
+        return new CreateStorageCommand(name, StorageType.of(type), parentId);
+    }
+
+    private BaseCommand parseCreateItem(Map<String, String> args) {
+        validateRequiredArgs(args, "name", "storage");
+        String name = validateName(args.get("name"));
+        Long storageId = validateId(args.get("storage"));
+        List<String> keywords = args.containsKey("keywords") ? parseKeywords(args.get("keywords")) : Collections.emptyList();
         return new CreateItemCommand(name, storageId, keywords);
     }
 
-    private BaseCommand parseRemoveItem(String[] parts) {
-        final int expectedArgs = MIN_ARGS_REMOVE;
-        validateArgs(parts, expectedArgs);
-        long id = validateId(parts[IDX_REMOVE_ID]);
+    private BaseCommand parseRemoveItem(Map<String, String> args) {
+        validateRequiredArgs(args, "id");
+        Long id = validateId(args.get("id"));
         return new RemoveItemCommand(id);
     }
 
-    private BaseCommand parseRemoveStorage(String[] parts) {
-        final int expectedArgs = MIN_ARGS_REMOVE;
-        validateArgs(parts, expectedArgs);
-        long id = validateId(parts[IDX_REMOVE_ID]);
+    private BaseCommand parseRemoveStorage(Map<String, String> args) {
+        validateRequiredArgs(args, "id");
+        Long id = validateId(args.get("id"));
         return new RemoveStorageCommand(id);
     }
 
-    private BaseCommand parseGetItemById(String[] parts) {
-        validateArgs(parts, MIN_ARGS_GET);
-        long id = validateId(parts[IDX_GET_ID]);
+    private BaseCommand parseGetItemById(Map<String, String> args) {
+        validateRequiredArgs(args, "id");
+        Long id = validateId(args.get("id"));
         return new GetItemByIdCommand(id);
     }
 
-    private BaseCommand parseGetStorageById(String[] parts) {
-        validateArgs(parts, MIN_ARGS_GET);
-        long id = validateId(parts[IDX_GET_ID]);
+    private BaseCommand parseGetStorageById(Map<String, String> args) {
+        validateRequiredArgs(args, "id");
+        Long id = validateId(args.get("id"));
         return new GetStorageByIdCommand(id);
     }
 
-    private BaseCommand parseSearchItems(String[] parts) {
-        validateArgs(parts, MIN_ARGS_SEARCH);
-        String searchTerm = parts[2];
-        return new SearchItemsCommand(searchTerm);
+    private BaseCommand parseListStorages(Map<String, String> args) {
+        return new ListStoragesCommand();
     }
 
-    private BaseCommand parseSearchItemsByKeyword(String[] parts) {
-        validateArgs(parts, MIN_ARGS_SEARCH);
-        String keyword = parts[2];
-        return new SearchItemsByKeywordsCommand(keyword);
+    private BaseCommand parseListItems(Map<String, String> args) {
+        return new ListItemsCommand();
     }
 
-    private BaseCommand parseListStorages(String[] parts) {
-        validateArgs(parts, MIN_ARGS_LIST);
-        return new ListStorageCommand();
+    private BaseCommand parseListSubStorages(Map<String, String> args) {
+        validateRequiredArgs(args, "id");
+        Long storageId = validateId(args.get("id"));
+        return new ListSubStoragesCommand(storageId);
     }
 
-    private BaseCommand parseListItems(String[] parts) {
-        validateArgs(parts, MIN_ARGS_LIST);
-        return new ListItemCommand();
+    private BaseCommand parseGetItemsByStorageId(Map<String, String> args) {
+        validateRequiredArgs(args, "id");
+        Long storageId = validateId(args.get("id"));
+        return new GetItemsByStorageCommand(storageId);
+    }
+
+    private BaseCommand parseSearchItem(Map<String, String> args) {
+        String name = args.getOrDefault("name", null);
+        List<String> keywords = args.containsKey("keywords") ? parseKeywords(args.get("keywords")) : Collections.emptyList();
+        return new SearchItemCommand(name, keywords);
+    }
+
+    private BaseCommand parseGetItemsNear(Map<String, String> args) {
+        validateRequiredArgs(args, "id");
+        Long itemId = validateId(args.get("id"));
+        return new GetItemsNearCommand(itemId);
+    }
+
+    private BaseCommand parseTrackStorages(Map<String, String> args) {
+        validateRequiredArgs(args, "id");
+        Long itemId = validateId(args.get("id"));
+        return new TrackStoragesHierarchyCommand(itemId);
     }
 
     private List<String> parseKeywords(String keywordsStr) {
@@ -163,13 +197,11 @@ public class StringToCommandTranslator implements Translator<String, BaseCommand
                 .toList();
     }
 
-    private Long parseOptionalParentId(String[] parts) {
-        return (IDX_PARENT_ID < parts.length) ? validateId(parts[IDX_PARENT_ID]) : null;
-    }
-
-    private void validateArgs(String[] parts, int expected) {
-        if (parts.length < expected) {
-            throw new IllegalArgumentException("Invalid number of arguments!");
+    private String validateType(String storageType) {
+        try {
+            return StorageType.of(storageType).name();
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid storage type: " + storageType);
         }
     }
 
@@ -180,10 +212,6 @@ public class StringToCommandTranslator implements Translator<String, BaseCommand
         throw new IllegalArgumentException("Invalid name: " + name);
     }
 
-    private StorageType validateType(String storageType) {
-        return StorageType.of(storageType);
-    }
-
     private long validateId(String id) {
         if (ID_PATTERN.matcher(id).matches()) {
             return Long.parseLong(id);
@@ -191,20 +219,11 @@ public class StringToCommandTranslator implements Translator<String, BaseCommand
         throw new IllegalArgumentException("Invalid ID: " + id);
     }
 
-    private CommandType parseCommandType(String[] parts) {
-        if (parts.length == 0) {
-            return CommandType.BROKEN;
-        }
-        for (int len = parts.length; len > 0; len--) {
-            String cmdCandidate = String.join("_", Arrays.copyOfRange(parts, 0, len))
-                    .toUpperCase();
-
-            try {
-                return CommandType.valueOf(cmdCandidate);
-            } catch (IllegalArgumentException ignored) {
-                // try shorter prefix
+    private void validateRequiredArgs(Map<String, String> args, String... requiredKeys) {
+        for (String key : requiredKeys) {
+            if (!args.containsKey(key)) {
+                throw new IllegalArgumentException("Missing required argument: --" + key);
             }
         }
-        return CommandType.BROKEN;
     }
 }

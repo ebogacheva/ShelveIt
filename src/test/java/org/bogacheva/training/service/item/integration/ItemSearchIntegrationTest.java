@@ -1,5 +1,6 @@
 package org.bogacheva.training.service.item.integration;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -12,6 +13,7 @@ import org.bogacheva.training.domain.storage.Storage;
 import org.bogacheva.training.repository.item.ItemRepository;
 import org.bogacheva.training.repository.storage.StorageRepository;
 import org.bogacheva.training.service.dto.ItemDTO;
+import org.bogacheva.training.service.exceptions.ItemNotFoundException;
 import org.bogacheva.training.service.exceptions.StorageNotFoundException;
 import org.bogacheva.training.service.item.search.DefaultItemSearchService;
 import org.bogacheva.training.service.mapper.ItemMapper;
@@ -21,12 +23,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @SpringBootTest
@@ -60,68 +59,56 @@ class ItemSearchIntegrationTest extends AbstractPostgresIT {
         itemRepository.deleteAll();
         storageRepository.deleteAll();
 
-        rootStorage = new Storage();
-        rootStorage.setName("Root Storage");
-        rootStorage = storageRepository.save(rootStorage);
+        rootStorage = saveStorage("Root Storage", null);
+        childStorage = saveStorage("Child Storage", rootStorage);
 
-        childStorage = new Storage();
-        childStorage.setName("Child Storage");
-        childStorage.setParent(rootStorage);
-        childStorage = storageRepository.save(childStorage);
-
-        item1 = new Item();
-        item1.setName("Hammer");
-        item1.setStorage(rootStorage);
-        item1.setKeywords(Arrays.asList("tool", "heavy"));
-        item1 = itemRepository.save(item1);
-
-        item2 = new Item();
-        item2.setName("Screwdriver");
-        item2.setStorage(childStorage);
-        item2.setKeywords(Arrays.asList("tool", "precision"));
-        item2 = itemRepository.save(item2);
-
-        item3 = new Item();
-        item3.setName("Hand Saw");
-        item3.setStorage(rootStorage);
-        item3.setKeywords(Arrays.asList("cutting", "wood"));
-        item3 = itemRepository.save(item3);
+        item1 = saveItem("Hammer", rootStorage, "tool", "heavy");
+        item2 = saveItem("Screwdriver", childStorage, "tool", "precision");
+        item3 = saveItem("Hand Saw", rootStorage, "cutting", "wood");
     }
 
     @Test
     @DisplayName("Search items by partial name case-insensitive")
     void testSearchItemsByName() {
-        List<ItemDTO> results = itemSearchService.searchItemsByName("ham");
+        List<ItemDTO> results = itemSearchService.search("ham", List.of());
         assertThat(results).extracting("name").containsExactly("Hammer");
 
-        results = itemSearchService.searchItemsByName("HAN");
+        results = itemSearchService.search("HAN", List.of());
         assertThat(results).extracting("name").containsExactly("Hand Saw");
 
-        results = itemSearchService.searchItemsByName("nonexistent");
+        results = itemSearchService.search("nonexistent", List.of());
         assertThat(results).isEmpty();
     }
 
     @Test
     @DisplayName("Search items by keywords case-insensitive partial match")
     void testSearchItemsByKeywords() {
-        List<ItemDTO> results = itemSearchService.searchItemsByKeywords(List.of("tool"));
+        List<ItemDTO> results = itemSearchService.search(null, List.of("tool"));
         assertThat(results).extracting("name").containsExactlyInAnyOrder("Hammer", "Screwdriver");
 
-        results = itemSearchService.searchItemsByKeywords(List.of("heavy"));
+        results = itemSearchService.search(null, List.of("heavy"));
         assertThat(results).extracting("name").containsExactly("Hammer");
 
-        results = itemSearchService.searchItemsByKeywords(Arrays.asList("cutting", "precision"));
+        results = itemSearchService.search(null, Arrays.asList("cutting", "precision"));
         assertThat(results).extracting("name").containsExactlyInAnyOrder("Screwdriver", "Hand Saw");
 
-        results = itemSearchService.searchItemsByKeywords(List.of("nonexistent"));
+        results = itemSearchService.search(null, List.of("nonexistent"));
         assertThat(results).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Search items by partial name and keywords combined")
+    void testSearchItemsByNameAndKeywords() {
+        assertThat(itemSearchService.search("ham", List.of("wood")))
+                .extracting("name")
+                .containsExactlyInAnyOrder("Hammer", "Hand Saw");
     }
 
     @Test
     @DisplayName("Search items by storage name includes sub-storages recursively")
     void testSearchItemsByStorageName() {
         List<ItemDTO> results = itemSearchService.searchItemsByStorageName("root");
-        assertThat(results).extracting("name").containsExactlyInAnyOrder("Hammer", "Hand Saw", "Screwdriver");
+        assertThat(results).extracting("name").containsExactlyInAnyOrder("Hammer", "Hand Saw");
 
         results = itemSearchService.searchItemsByStorageName("child");
         assertThat(results).extracting("name").containsExactly("Screwdriver");
@@ -165,13 +152,33 @@ class ItemSearchIntegrationTest extends AbstractPostgresIT {
     @Test
     @DisplayName("Search with null or empty input returns empty list")
     void testSearchEmptyOrNullInput() {
-        assertThat(itemSearchService.searchItemsByName(null)).isEmpty();
-        assertThat(itemSearchService.searchItemsByName(" ")).isEmpty();
-
-        assertThat(itemSearchService.searchItemsByKeywords(null)).isEmpty();
-        assertThat(itemSearchService.searchItemsByKeywords(List.of())).isEmpty();
+        assertThat(itemSearchService.search(null, List.of())).isEmpty();
+        assertThat(itemSearchService.search(" ", List.of())).isEmpty();
+        assertThat(itemSearchService.search(null, null)).isEmpty();
 
         assertThat(itemSearchService.searchItemsByStorageName(null)).isEmpty();
         assertThat(itemSearchService.searchItemsByStorageName(" ")).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Get items near non-existent item throws exception")
+    void testGetItemsNearInvalidItem() {
+        assertThatThrownBy(() -> itemSearchService.getItemsNear(999L))
+                .isInstanceOf(ItemNotFoundException.class);
+    }
+
+    private Storage saveStorage(String name, Storage parent) {
+        Storage storage = new Storage();
+        storage.setName(name);
+        storage.setParent(parent);
+        return storageRepository.save(storage);
+    }
+
+    private Item saveItem(String name, Storage storage, String... keywords) {
+        Item item = new Item();
+        item.setName(name);
+        item.setStorage(storage);
+        item.setKeywords(Arrays.asList(keywords));
+        return itemRepository.save(item);
     }
 }

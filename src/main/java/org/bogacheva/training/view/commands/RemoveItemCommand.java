@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public class RemoveItemCommand extends BaseCommand {
 
-    private final long id;
+    private final Long id;
 
     public RemoveItemCommand(long id) {
         super(CommandType.REMOVE_ITEM);

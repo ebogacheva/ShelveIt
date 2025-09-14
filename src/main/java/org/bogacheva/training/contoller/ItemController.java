@@ -38,9 +38,23 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<ItemDTO>> searchByKeywords(@RequestParam List<String> keywords) {
-        List<ItemDTO> items = itemSearchService.searchItemsByKeywords(keywords);
+    public ResponseEntity<List<ItemDTO>> search(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) List<String> keywords) {
+        List<ItemDTO> items = itemSearchService.search(name, keywords);
         return ResponseEntity.ok(items);
+    }
+
+    @GetMapping("/{itemId}/near")
+    public ResponseEntity<List<ItemDTO>> getItemsNear(@PathVariable Long itemId) {
+        List<ItemDTO> nearItems = itemSearchService.getItemsNear(itemId);
+        return ResponseEntity.ok(nearItems);
+    }
+
+    @GetMapping("/{storageId}")
+    public ResponseEntity<List<ItemDTO>> getByStorageId(@PathVariable Long storageId) {
+        List<ItemDTO> itemByStorageId = itemSearchService.getByStorageId(storageId);
+        return ResponseEntity.ok(itemByStorageId);
     }
 
     @PutMapping("/{itemId}")
@@ -54,12 +68,6 @@ public class ItemController {
     public ResponseEntity<Void> delete(@PathVariable Long itemId) {
         itemService.delete(itemId);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/{itemId}/near")
-    public ResponseEntity<List<ItemDTO>> getItemsNear(@PathVariable Long itemId) {
-        List<ItemDTO> nearItems = itemService.getItemsNear(itemId);
-        return ResponseEntity.ok(nearItems);
     }
 
     @GetMapping("/{itemId}/trackStorages")

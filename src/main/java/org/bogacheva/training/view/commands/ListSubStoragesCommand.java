@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public class ListSubStoragesCommand extends BaseCommand {
 
-    private final long storageId;
+    private final Long storageId;
 
     public ListSubStoragesCommand(long id) {
         super(CommandType.LIST_SUBSTORAGES);

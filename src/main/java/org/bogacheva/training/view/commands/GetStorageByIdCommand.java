@@ -1,7 +1,7 @@
 package org.bogacheva.training.view.commands;
 
 public class GetStorageByIdCommand extends BaseCommand {
-    private final long id;
+    private final Long id;
 
     public GetStorageByIdCommand(long id) {
         super(CommandType.GET_STORAGE);

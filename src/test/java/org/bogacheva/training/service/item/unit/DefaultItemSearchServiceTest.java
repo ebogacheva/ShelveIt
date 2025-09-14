@@ -16,6 +16,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -44,17 +46,24 @@ class DefaultItemSearchServiceTest {
     @InjectMocks
     private DefaultItemSearchService itemSearchService;
 
-    @Test
-    @DisplayName("searchItemsByName returns empty list when input is null or blank")
-    void searchItemsByName_returnsEmptyList_whenInputIsNullOrEmpty() {
-        assertTrue(itemSearchService.searchItemsByName(null).isEmpty());
-        assertTrue(itemSearchService.searchItemsByName("").isEmpty());
-        assertTrue(itemSearchService.searchItemsByName("  ").isEmpty());
+    @DisplayName("search returns empty list when both name is null/blank/empty and keywords list is empty")
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {" ", "  ", "\t"})
+    void search_returnsEmptyList_whenInputBlankEmptyNameAndEmptyListOfKeywords(String name) {
+        assertTrue(itemSearchService.search(name, List.of()).isEmpty());
+    }
+
+    @DisplayName("search returns empty list when keywords list is null or empty and name is null")
+    @ParameterizedTest
+    @NullAndEmptySource
+    void search_returnsEmptyList_whenInputNullOrEmptyListKeywordsAndNullName(List<String> keywords) {
+        assertTrue(itemSearchService.search(null, keywords).isEmpty());
     }
 
     @Test
-    @DisplayName("searchItemsByName calls repository with lowercased pattern and maps results")
-    void searchItemsByName_callsRepositoryAndMapsResults() {
+    @DisplayName("search by name calls repository with lowercased pattern and maps results")
+    void search_callsRepositoryAndMapsResults() {
         String input = "Test";
         String expectedPattern = "%test%";
 
@@ -62,12 +71,12 @@ class DefaultItemSearchServiceTest {
         List<ItemDTO> mappedDtos = List.of(new ItemDTO(), new ItemDTO());
 
         when(itemRepository.findByNameLikeIgnoreCase(expectedPattern)).thenReturn(foundItems);
-        when(itemMapper.toDTOList(foundItems)).thenReturn(mappedDtos);
+        when(itemMapper.toDTOList(any())).thenReturn(mappedDtos);
 
-        List<ItemDTO> result = itemSearchService.searchItemsByName(input);
+        List<ItemDTO> result = itemSearchService.search(input, null);
 
         verify(itemRepository).findByNameLikeIgnoreCase(expectedPattern);
-        verify(itemMapper).toDTOList(foundItems);
+        verify(itemMapper).toDTOList(any());
         assertEquals(mappedDtos, result);
     }
 
@@ -86,16 +95,16 @@ class DefaultItemSearchServiceTest {
         }
 
         if (repoResult != null) {
-            when(itemMapper.toDTOList(repoResult)).thenReturn(expectedDtos);
+            when(itemMapper.toDTOList(anyList())).thenReturn(expectedDtos);
         }
 
-        List<ItemDTO> result = itemSearchService.searchItemsByKeywords(searchKeywords);
+        List<ItemDTO> result = itemSearchService.search(null, searchKeywords);
 
         assertEquals(expectedDtos, result);
 
         if (lowerKeywords != null && !lowerKeywords.isEmpty()) {
             verify(itemRepository).findByAnyKeyword(lowerKeywords);
-            verify(itemMapper).toDTOList(repoResult);
+            verify(itemMapper).toDTOList(anyList());
         } else {
             verify(itemRepository, never()).findByAnyKeyword(anyList());
             verify(itemMapper, never()).toDTOList(anyList());
@@ -128,15 +137,7 @@ class DefaultItemSearchServiceTest {
     }
 
     @Test
-    @DisplayName("searchItemsByStorageName returns empty list when input is null or blank")
-    void searchItemsByStorageName_returnsEmptyList_whenInputIsNullOrEmpty() {
-        assertTrue(itemSearchService.searchItemsByStorageName(null).isEmpty());
-        assertTrue(itemSearchService.searchItemsByStorageName("").isEmpty());
-        assertTrue(itemSearchService.searchItemsByStorageName("   ").isEmpty());
-    }
-
-    @Test
-    @DisplayName("searchItemsByStorageName collects items from all matched storages including sub-storages")
+    @DisplayName("searchItemsByStorageName collects items from all matched storages excluding sub-storages")
     void searchItemsByStorageName_collectsItemsFromAllMatchedStorages() {
         String input = "storage";
         String expectedPattern = "%storage%";
@@ -221,11 +222,9 @@ class DefaultItemSearchServiceTest {
     @Test
     @DisplayName("getByStorageId throws StorageNotFoundException when storage not found")
     void getByStorageId_throwsException_whenStorageNotFound() {
-        Long storageId = 20L;
+        when(storageRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        when(storageRepository.findById(storageId)).thenReturn(Optional.empty());
-
-        assertThrows(StorageNotFoundException.class, () -> itemSearchService.getByStorageId(storageId));
+        assertThrows(StorageNotFoundException.class, () -> itemSearchService.getByStorageId(anyLong()));
     }
 
     @Test

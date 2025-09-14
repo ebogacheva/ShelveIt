@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public class GetItemsByStorageCommand extends BaseCommand {
 
-    private final long storageId;
+    private final Long storageId;
 
     public GetItemsByStorageCommand(long id) {
         super(CommandType.GET_ITEMS_BY_STORAGE);
