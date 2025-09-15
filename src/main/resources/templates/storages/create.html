@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>ShelveIt - Create Storage</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        /* Inline CSS for adjustments */
+        .flex-container {
+            display: flex;
+            justify-content: space-between; /* Align blocks side by side */
+            gap: 20px; /* Add spacing between blocks */
+            margin-bottom: 20px;
+        }
+
+        .card {
+            flex: 1; /* Ensures all blocks are of equal size */
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .form-card form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px; /* Adds consistent spacing between fields */
+        }
+
+        .form-card form div {
+            display: flex;
+            align-items: center;
+            gap: 20px; /* Adds spacing between label and input */
+        }
+
+        .form-card form label {
+            flex: 1;
+            font-size: 16px;
+        }
+
+        .form-card form input,
+        .form-card form select {
+            flex: 2;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .form-card .actions {
+            display: flex;
+            justify-content: flex-start; /* Align Save button to the left */
+        }
+
+        .form-card .actions button {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .form-card .actions button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>ShelveIt Project - Keeping an eye on your things!</h1>
+</header>
+
+<div class="container">
+    <h1>Create New Storage</h1>
+
+    <div class="flex-container">
+        <!-- Storages Block -->
+        <div class="card">
+            <h2>Storages</h2>
+            <p>Residence: Root storage, no parent.<br>
+                Room: Can have Residence as parent, may include Furniture, Units, and Items directly.<br>
+                Furniture: Can have Residence or Room as parent, may include Units and Items.<br>
+                Unit: Can have any storage as parent, may include only Items.</p>
+            <div class="actions">
+                <button onclick="location.href='/storages'">List</button>
+                <button onclick="location.href='/storages/create'">Create</button>
+                <button onclick="location.href='/storages/search'">Search</button>
+            </div>
+        </div>
+
+        <!-- Items Block -->
+        <div class="card">
+            <h2>Items</h2>
+            <p>Items can be stored in any storage type.<br>
+                Items may have keywords for easier searching.</p>
+            <div class="actions">
+                <button onclick="location.href='/items'">List</button>
+                <button onclick="location.href='/items/create'">Create</button>
+                <button onclick="location.href='/items/search'">Search</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex-container">
+        <!-- Create Storage Form -->
+        <div class="card form-card">
+            <h2>Create Storage</h2>
+            <form action="/storages" method="post">
+                <!-- Name Field -->
+                <div>
+                    <label for="name"><strong>Name:</strong></label>
+                    <input type="text" id="name" name="name" placeholder="Enter storage name" th:value="${storage.name}" required>
+                </div>
+
+                <!-- Type Field -->
+                <div>
+                    <label for="type"><strong>Type:</strong></label>
+                    <select id="type" name="type" th:value="${storage.type}" required>
+                        <option value="RESIDENCE" th:selected="${storage.type == 'RESIDENCE'}">RESIDENCE</option>
+                        <option value="ROOM" th:selected="${storage.type == 'ROOM'}">ROOM</option>
+                        <option value="FURNITURE" th:selected="${storage.type == 'FURNITURE'}">FURNITURE</option>
+                        <option value="UNIT" th:selected="${storage.type == 'UNIT'}">UNIT</option>
+                    </select>
+                </div>
+
+                <!-- Parent ID Field -->
+                <div>
+                    <label for="parentId"><strong>Parent ID:</strong></label>
+                    <input type="number" id="parentId" name="parentId" placeholder="Enter parent ID (optional)" th:value="${storage.parentId}">
+                </div>
+
+                <!-- Save Button -->
+                <div class="actions">
+                    <button type="submit">Save</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Second Blank Frame -->
+        <div class="card blank-card">
+            <!-- Blank content for now -->
+        </div>
+    </div>
+</div>
+</body>
+</html>

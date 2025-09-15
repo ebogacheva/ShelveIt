@@ -3,7 +3,7 @@ package org.bogacheva.training.service.storage;
 import org.bogacheva.training.domain.storage.Storage;
 import org.bogacheva.training.domain.storage.StorageType;
 import org.bogacheva.training.service.dto.StorageCreateDTO;
-import org.bogacheva.training.service.exceptions.InvalidStorageHierarchyException;
+import org.bogacheva.training.exceptions.InvalidStorageHierarchyException;
 import org.springframework.stereotype.Component;
 
 import java.util.function.Supplier;

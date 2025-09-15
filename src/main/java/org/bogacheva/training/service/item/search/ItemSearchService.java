@@ -1,9 +1,9 @@
 package org.bogacheva.training.service.item.search;
 
 import org.bogacheva.training.service.dto.ItemDTO;
-import org.bogacheva.training.service.exceptions.InvalidItemOperationException;
-import org.bogacheva.training.service.exceptions.ItemNotFoundException;
-import org.bogacheva.training.service.exceptions.StorageNotFoundException;
+import org.bogacheva.training.exceptions.InvalidItemOperationException;
+import org.bogacheva.training.exceptions.ItemNotFoundException;
+import org.bogacheva.training.exceptions.StorageNotFoundException;
 
 import java.util.List;
 

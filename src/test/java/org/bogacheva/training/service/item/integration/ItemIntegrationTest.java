@@ -9,7 +9,7 @@ import org.bogacheva.training.repository.storage.StorageRepository;
 import org.bogacheva.training.service.dto.ItemCreateDTO;
 import org.bogacheva.training.service.dto.ItemDTO;
 import org.bogacheva.training.service.dto.ItemUpdateDTO;
-import org.bogacheva.training.service.exceptions.ItemNotFoundException;
+import org.bogacheva.training.exceptions.ItemNotFoundException;
 import org.bogacheva.training.service.item.crud.ItemService;
 import org.bogacheva.training.service.testdb.AbstractPostgresIT;
 import org.junit.jupiter.api.*;

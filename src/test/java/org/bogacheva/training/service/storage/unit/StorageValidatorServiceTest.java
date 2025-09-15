@@ -3,7 +3,7 @@ package org.bogacheva.training.service.storage.unit;
 import org.bogacheva.training.domain.storage.Storage;
 import org.bogacheva.training.domain.storage.StorageType;
 import org.bogacheva.training.service.dto.StorageCreateDTO;
-import org.bogacheva.training.service.exceptions.InvalidStorageHierarchyException;
+import org.bogacheva.training.exceptions.InvalidStorageHierarchyException;
 import org.bogacheva.training.service.storage.StorageValidatorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

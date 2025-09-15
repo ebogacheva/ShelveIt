@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>ShelveIt - Storages List</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<header>
+    <h1>ShelveIt Project - Keeping an eye on your things!</h1>
+</header>
+
+<div class="container">
+    <h1>Storages - List</h1>
+
+    <div class="flex-container">
+        <!-- Storages Block -->
+        <div class="card">
+            <h2>Storages</h2>
+            <p>Residence: Root storage, no parent.<br>
+                Room: Can have Residence as parent, may include Furniture, Units, and Items directly.<br>
+                Furniture: Can have Residence or Room as parent, may include Units and Items.<br>
+                Unit: Can have any storage as parent, may include only Items.</p>
+            <div class="actions">
+                <button onclick="location.href='/storages'">List</button>
+                <button onclick="location.href='/storages/create'">Create</button>
+                <button onclick="location.href='/storages/search'">Search</button>
+            </div>
+        </div>
+
+        <!-- Items Block -->
+        <div class="card">
+            <h2>Items</h2>
+            <p>Items can be stored in any storage type.<br>
+                Items may have keywords for easier searching.</p>
+            <div class="actions">
+                <button onclick="location.href='/items'">List</button>
+                <button onclick="location.href='/items/create'">Create</button>
+                <button onclick="location.href='/items/search'">Search</button>
+            </div>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Parent</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="storage : ${storages}">
+            <td th:text="${storage.id}"></td>
+            <td th:text="${storage.name}"></td>
+            <td th:text="${storage.type}"></td>
+            <td>
+                <!-- Parent ID as a clickable link -->
+                <a th:if="${storage.parentId != null}"
+                   th:href="@{/storages/{id}(id=${storage.parentId})}"
+                   th:text="${storage.parentId}"></a>
+                <span th:if="${storage.parentId == null}">No Parent</span>
+            </td>
+            <td>
+                <button onclick="location.href='/storages/{id}'" th:onclick="'location.href=\'/storages/' + ${storage.id} + '\''">Details</button>
+                <button onclick="location.href='/storages/{id}/update'" th:onclick="'location.href=\'/storages/' + ${storage.id} + '/update\''">Update</button>
+                <button onclick="location.href='/storages/{id}/delete'" th:onclick="'location.href=\'/storages/' + ${storage.id} + '/delete\''">Delete</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

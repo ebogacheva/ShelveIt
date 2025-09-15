@@ -5,10 +5,10 @@ import org.bogacheva.training.service.dto.StorageDTO;
 import org.bogacheva.training.service.item.search.ItemSearchService;
 import org.bogacheva.training.service.item.crud.ItemService;
 import org.bogacheva.training.service.storage.StorageService;
-import org.bogacheva.training.service.translators.StringToCommandTranslator;
-import org.bogacheva.training.service.translators.Translator;
-import org.bogacheva.training.view.ShelveItView;
-import org.bogacheva.training.view.commands.*;
+import org.bogacheva.training.translation.StringToCommandTranslator;
+import org.bogacheva.training.translation.Translator;
+import org.bogacheva.training.view.cli.ShelveItView;
+import org.bogacheva.training.view.cli.commands.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 

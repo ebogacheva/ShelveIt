@@ -5,9 +5,8 @@ import org.bogacheva.training.service.dto.ItemDTO;
 import org.bogacheva.training.service.dto.StorageCreateDTO;
 import org.bogacheva.training.service.dto.StorageDTO;
 import org.bogacheva.training.service.dto.StorageUpdateDTO;
-import org.bogacheva.training.service.exceptions.InvalidStorageHierarchyException;
-import org.bogacheva.training.service.exceptions.StorageNotFoundException;
-import org.springframework.transaction.annotation.Transactional;
+import org.bogacheva.training.exceptions.InvalidStorageHierarchyException;
+import org.bogacheva.training.exceptions.StorageNotFoundException;
 
 import java.util.List;
 

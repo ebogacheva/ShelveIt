@@ -4,8 +4,8 @@ import org.bogacheva.training.domain.storage.Storage;
 import org.bogacheva.training.domain.storage.StorageType;
 import org.bogacheva.training.service.dto.StorageCreateDTO;
 import org.bogacheva.training.service.dto.StorageDTO;
-import org.bogacheva.training.service.exceptions.InvalidStorageHierarchyException;
-import org.bogacheva.training.service.exceptions.StorageNotFoundException;
+import org.bogacheva.training.exceptions.InvalidStorageHierarchyException;
+import org.bogacheva.training.exceptions.StorageNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

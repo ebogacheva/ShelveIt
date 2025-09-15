@@ -1,7 +1,7 @@
 package org.bogacheva.training.service.item.crud;
 
-import org.bogacheva.training.service.exceptions.ItemNotFoundException;
-import org.bogacheva.training.service.exceptions.StorageNotFoundException;
+import org.bogacheva.training.exceptions.ItemNotFoundException;
+import org.bogacheva.training.exceptions.StorageNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 import org.bogacheva.training.domain.item.Item;
 import org.bogacheva.training.domain.storage.Storage;

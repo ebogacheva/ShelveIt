@@ -3,8 +3,8 @@ package org.bogacheva.training.service.item.crud;
 import org.bogacheva.training.service.dto.ItemCreateDTO;
 import org.bogacheva.training.service.dto.ItemDTO;
 import org.bogacheva.training.service.dto.ItemUpdateDTO;
-import org.bogacheva.training.service.exceptions.ItemNotFoundException;
-import org.bogacheva.training.service.exceptions.StorageNotFoundException;
+import org.bogacheva.training.exceptions.ItemNotFoundException;
+import org.bogacheva.training.exceptions.StorageNotFoundException;
 
 import java.util.List;
 

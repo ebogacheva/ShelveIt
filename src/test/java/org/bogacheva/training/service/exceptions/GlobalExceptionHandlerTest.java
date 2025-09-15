@@ -1,12 +1,13 @@
 package org.bogacheva.training.service.exceptions;
 
-import org.junit.jupiter.api.Assertions;
+import org.bogacheva.training.exceptions.GlobalExceptionHandler;
+import org.bogacheva.training.exceptions.InvalidStorageHierarchyException;
+import org.bogacheva.training.exceptions.ShelveItError;
+import org.bogacheva.training.exceptions.StorageNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 

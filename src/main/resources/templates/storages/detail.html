@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>ShelveIt - Storage Details</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<header>
+    <h1>ShelveIt Project - Keeping an eye on your things!</h1>
+</header>
+
+<div class="container">
+    <!-- Main Header -->
+    <h1>Storage details for - <span th:text="${storage.name}"></span></h1>
+
+    <div class="flex-container">
+        <!-- Storages Block -->
+        <div class="card">
+            <h2>Storages</h2>
+            <p>Residence: Root storage, no parent.<br>
+                Room: Can have Residence as parent, may include Furniture, Units, and Items directly.<br>
+                Furniture: Can have Residence or Room as parent, may include Units and Items.<br>
+                Unit: Can have any storage as parent, may include only Items.</p>
+            <div class="actions">
+                <button onclick="location.href='/storages'">List</button>
+                <button onclick="location.href='/storages/create'">Create</button>
+                <button onclick="location.href='/storages/search'">Search</button>
+            </div>
+        </div>
+
+        <!-- Items Block -->
+        <div class="card">
+            <h2>Items</h2>
+            <p>Items can be stored in any storage type.<br>
+                Items may have keywords for easier searching.</p>
+            <div class="actions">
+                <button onclick="location.href='/items'">List</button>
+                <button onclick="location.href='/items/create'">Create</button>
+                <button onclick="location.href='/items/search'">Search</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Details Section -->
+    <div class="card">
+        <p>
+            <strong>ID:</strong> <span th:text="${storage.id}"></span>
+            &nbsp;&nbsp;&nbsp;
+            <strong>Name:</strong> <span th:text="${storage.name}"></span>
+            &nbsp;&nbsp;&nbsp;
+            <strong>Type:</strong> <span th:text="${storage.type}"></span>
+            &nbsp;&nbsp;&nbsp;
+            <strong>Parent:</strong>
+            <a th:if="${storage.parentId != null}"
+               th:href="@{/storages/{id}(id=${storage.parentId})}"
+               th:text="${storage.parentId}"></a>
+            <span th:if="${storage.parentId == null}">No Parent</span>
+        </p>
+    </div>
+
+    <!-- Substorages Section -->
+    <div class="card">
+        <h2>Substorages</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Parent</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="substorage : ${substorages}">
+                <td th:text="${substorage.id}"></td>
+                <td th:text="${substorage.name}"></td>
+                <td th:text="${substorage.type}"></td>
+                <td>
+                    <a th:if="${substorage.parentId != null}"
+                       th:href="@{/storages/{id}(id=${substorage.parentId})}"
+                       th:text="${substorage.parentId}"></a>
+                    <span th:if="${substorage.parentId == null}">No Parent</span>
+                </td>
+                <td>
+                    <button onclick="location.href='/storages/{id}'" th:onclick="'location.href=\'/storages/' + ${substorage.id} + '\''">Details</button>
+                    <button onclick="location.href='/storages/{id}/update'" th:onclick="'location.href=\'/storages/' + ${substorage.id} + '/update\''">Update</button>
+                    <button onclick="location.href='/storages/{id}/delete'" th:onclick="'location.href=\'/storages/' + ${substorage.id} + '/delete\''">Delete</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Items Section -->
+    <div class="card">
+        <h2>Items</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Keywords</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${items}">
+                <td th:text="${item.id}"></td>
+                <td th:text="${item.name}"></td>
+                <td th:text="${item.keywords}"></td>
+                <td>
+                    <button onclick="location.href='/items/{id}/update'" th:onclick="'location.href=\'/items/' + ${item.id} + '/update\''">Update</button>
+                    <button onclick="location.href='/items/{id}/delete'" th:onclick="'location.href=\'/items/' + ${item.id} + '/delete\''">Delete</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

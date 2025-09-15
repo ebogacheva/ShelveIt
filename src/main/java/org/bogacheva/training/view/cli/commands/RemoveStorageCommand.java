@@ -1,0 +1,14 @@
+package org.bogacheva.training.view.cli.commands;
+
+import lombok.Getter;
+
+@Getter
+public class RemoveStorageCommand extends BaseCommand {
+
+    private final Long id;
+
+    public RemoveStorageCommand(long id) {
+        super(CommandType.REMOVE_STORAGE);
+        this.id = id;
+    }
+}

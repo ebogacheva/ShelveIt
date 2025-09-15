@@ -10,7 +10,7 @@ import org.bogacheva.training.service.dto.ItemDTO;
 import org.bogacheva.training.service.dto.StorageCreateDTO;
 import org.bogacheva.training.service.dto.StorageDTO;
 import org.bogacheva.training.service.dto.StorageUpdateDTO;
-import org.bogacheva.training.service.exceptions.StorageNotFoundException;
+import org.bogacheva.training.exceptions.StorageNotFoundException;
 import org.bogacheva.training.service.mapper.ItemMapper;
 import org.bogacheva.training.service.mapper.StorageMapper;
 import org.springframework.stereotype.Service;
