@@ -52,7 +52,11 @@
         </thead>
         <tbody>
         <tr th:each="storage : ${storages}">
-            <td th:text="${storage.id}"></td>
+            <td>
+                <!-- Storage ID as a clickable link -->
+                <a th:href="@{/storages/{id}(id=${storage.id})}"
+                   th:text="${storage.id}"></a>
+            </td>
             <td th:text="${storage.name}"></td>
             <td th:text="${storage.type}"></td>
             <td>
@@ -63,7 +67,6 @@
                 <span th:if="${storage.parentId == null}">No Parent</span>
             </td>
             <td>
-                <button onclick="location.href='/storages/{id}'" th:onclick="'location.href=\'/storages/' + ${storage.id} + '\''">Details</button>
                 <button onclick="location.href='/storages/{id}/update'" th:onclick="'location.href=\'/storages/' + ${storage.id} + '/update\''">Update</button>
                 <button onclick="location.href='/storages/{id}/delete'" th:onclick="'location.href=\'/storages/' + ${storage.id} + '/delete\''">Delete</button>
             </td>

@@ -11,7 +11,7 @@
 
 <div class="container">
     <!-- Main Header -->
-    <h1>Storage details for - <span th:text="${storage.name}"></span></h1>
+    <h1>Storage details</h1>
 
     <div class="flex-container">
         <!-- Storages Block -->
@@ -58,64 +58,76 @@
         </p>
     </div>
 
-    <!-- Substorages Section -->
-    <div class="card">
-        <h2>Substorages</h2>
-        <table>
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Parent</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="substorage : ${substorages}">
-                <td th:text="${substorage.id}"></td>
-                <td th:text="${substorage.name}"></td>
-                <td th:text="${substorage.type}"></td>
-                <td>
-                    <a th:if="${substorage.parentId != null}"
-                       th:href="@{/storages/{id}(id=${substorage.parentId})}"
-                       th:text="${substorage.parentId}"></a>
-                    <span th:if="${substorage.parentId == null}">No Parent</span>
-                </td>
-                <td>
-                    <button onclick="location.href='/storages/{id}'" th:onclick="'location.href=\'/storages/' + ${substorage.id} + '\''">Details</button>
-                    <button onclick="location.href='/storages/{id}/update'" th:onclick="'location.href=\'/storages/' + ${substorage.id} + '/update\''">Update</button>
-                    <button onclick="location.href='/storages/{id}/delete'" th:onclick="'location.href=\'/storages/' + ${substorage.id} + '/delete\''">Delete</button>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
+    <!-- Substorages and Items Section -->
+    <div class="flex-container" style="margin-top: 20px;">
+        <!-- Substorages Block -->
+        <div class="card">
+            <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 10px;">
+                <h2 style="font-size: 18px; margin: 0; margin-right: auto;">Substorages</h2>
+                <button onclick="location.href='/storages/create?parentId={id}'" th:onclick="'location.href=\'/storages/create?parentId=' + ${storage.id} + '\''" class="btn" style="background-color: #6c8b6f; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-weight: bold;">Create</button>
+            </div>
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Parent</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="substorage : ${substorages}">
+                    <td>
+                        <!-- Substorage ID as a clickable link -->
+                        <a th:href="@{/storages/{id}(id=${substorage.id})}"
+                           th:text="${substorage.id}"></a>
+                    </td>
+                    <td th:text="${substorage.name}"></td>
+                    <td th:text="${substorage.type}"></td>
+                    <td>
+                        <a th:if="${substorage.parentId != null}"
+                           th:href="@{/storages/{id}(id=${substorage.parentId})}"
+                           th:text="${substorage.parentId}"></a>
+                        <span th:if="${substorage.parentId == null}">No Parent</span>
+                    </td>
+                    <td>
+                        <button onclick="location.href='/storages/{id}/update'" th:onclick="'location.href=\'/storages/' + ${substorage.id} + '/update\''">Update</button>
+                        <button onclick="location.href='/storages/{id}/delete'" th:onclick="'location.href=\'/storages/' + ${substorage.id} + '/delete\''">Delete</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
 
-    <!-- Items Section -->
-    <div class="card">
-        <h2>Items</h2>
-        <table>
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Keywords</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="item : ${items}">
-                <td th:text="${item.id}"></td>
-                <td th:text="${item.name}"></td>
-                <td th:text="${item.keywords}"></td>
-                <td>
-                    <button onclick="location.href='/items/{id}/update'" th:onclick="'location.href=\'/items/' + ${item.id} + '/update\''">Update</button>
-                    <button onclick="location.href='/items/{id}/delete'" th:onclick="'location.href=\'/items/' + ${item.id} + '/delete\''">Delete</button>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+        <!-- Items Block -->
+        <div class="card">
+            <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 10px;">
+                <h2 style="font-size: 18px; margin: 0; margin-right: auto;">Items</h2>
+                <button onclick="location.href='/items/create'" class="btn" style="background-color: #6c8b6f; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-weight: bold;">Create</button>
+            </div>
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Keywords</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${items}">
+                    <td th:text="${item.id}"></td>
+                    <td th:text="${item.name}"></td>
+                    <td th:text="${item.keywords}"></td>
+                    <td>
+                        <button onclick="location.href='/items/{id}/update'" th:onclick="'location.href=\'/items/' + ${item.id} + '/update\''">Update</button>
+                        <button onclick="location.href='/items/{id}/delete'" th:onclick="'location.href=\'/items/' + ${item.id} + '/delete\''">Delete</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 </body>

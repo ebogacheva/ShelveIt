@@ -68,7 +68,7 @@ header p {
     font-size: 14px;
     font-weight: bold;
     color: #fff;
-    background-color: #007bff;
+    background-color: #6c8b6f;
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -76,7 +76,7 @@ header p {
 }
 
 .actions button:hover {
-    background-color: #0056b3;
+    background-color: #5a7261;
 }
 
 .actions button:first-child {

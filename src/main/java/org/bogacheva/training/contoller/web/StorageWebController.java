@@ -1,10 +1,8 @@
 package org.bogacheva.training.contoller.web;
 
-import org.bogacheva.training.service.dto.ItemCreateDTO;
 import org.bogacheva.training.service.dto.ItemDTO;
 import org.bogacheva.training.service.dto.StorageCreateDTO;
 import org.bogacheva.training.service.dto.StorageDTO;
-import org.bogacheva.training.service.item.crud.ItemService;
 import org.bogacheva.training.service.item.search.ItemSearchService;
 import org.bogacheva.training.service.storage.StorageService;
 import org.springframework.stereotype.Controller;
@@ -45,8 +43,12 @@ public class StorageWebController {
 
 
     @GetMapping("/create")
-    public String createStorageForm(Model model) {
-        model.addAttribute("storage", new StorageCreateDTO());
+    public String createStorageForm(@RequestParam(value = "parentId", required = false) Long parentId, Model model) {
+        StorageCreateDTO storageCreateDTO = new StorageCreateDTO();
+        if (parentId != null) {
+            storageCreateDTO.setParentId(parentId);
+        }
+        model.addAttribute("storage", storageCreateDTO);
         return "storages/create";
     }
 
