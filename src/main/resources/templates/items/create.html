@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>ShelveIt - Create Item</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div th:replace="fragments :: header"></div>
+
+    <div class="container">
+        <h1>Create New Item</h1>
+
+        <div th:replace="fragments :: navigation-blocks"></div>
+
+        <div class="flex-container">
+            <!-- Create Item Form -->
+            <div class="card form-card">
+                <h2>Create Item</h2>
+                <form th:action="@{/items}" method="post">
+                    <!-- Name Field -->
+                    <div>
+                        <label for="name"><strong>Name:</strong></label>
+                        <input type="text" id="name" name="name" placeholder="Enter item name" th:value="${item?.name}" required>
+                    </div>
+
+                    <!-- Storage ID Field -->
+                    <div>
+                        <label for="storageId"><strong>Storage ID:</strong></label>
+                        <input type="number" id="storageId" name="storageId" placeholder="Enter storage ID" th:value="${item?.storageId}" required>
+                    </div>
+
+                    <!-- Keywords Field -->
+                    <div>
+                        <label for="keywords"><strong>Keywords:</strong></label>
+                        <input type="text" id="keywords" name="keywords" placeholder="Enter keywords" th:value="${#strings.listJoin(item?.keywords, ', ')}">
+                        <div class="keywords-help">Separate multiple keywords with commas (e.g., "book, reading, fiction")</div>
+                    </div>
+
+                    <!-- Save Button -->
+                    <div class="actions">
+                        <button type="submit">Save</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Second Blank Frame -->
+            <div class="card blank-card">
+            </div>
+        </div>
+    </div>
+</body>
+</html>

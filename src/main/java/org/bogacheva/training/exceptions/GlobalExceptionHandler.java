@@ -10,7 +10,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@RestControllerAdvice
+/**
+ * Global exception handler for REST API controllers.
+ */
+@RestControllerAdvice(basePackages = "org.bogacheva.training.contoller.rest")
 @Slf4j
 public class GlobalExceptionHandler {
 

@@ -1,32 +1,43 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Items</title>
+    <title>ShelveIt - Items List</title>
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-<h1>Items</h1>
-<table>
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Storage</th>
-        <th>Keywords</th>
-        <th>Actions</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="item : ${items}">
-        <td th:text="${item.id}"></td>
-        <td th:text="${item.name}"></td>
-        <td th:text="${item.storage.name}"></td>
-        <td th:text="${item.keywords}"></td>
-        <td>
-            <a th:href="@{/items/{id}(id=${item.id})}">View Details</a>
-            <a th:href="@{/items/{id}/delete(id=${item.id})}">Delete</a>
-        </td>
-    </tr>
-    </tbody>
-</table>
+<div th:replace="fragments :: header"></div>
+
+<div class="container">
+    <h1>Items - List</h1>
+
+    <div th:replace="fragments :: navigation-blocks"></div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Storage</th>
+            <th>Keywords</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${items}">
+            <td>
+                <a th:href="@{/items/{id}(id=${item.id})}"
+                   th:text="${item.id}"></a>
+            </td>
+            <td th:text="${item.name}"></td>
+            <td th:text="${item.storage.name}"></td>
+            <td th:text="${#strings.listJoin(item.keywords, ', ')}"></td>
+            <td>
+                <th:block th:replace="fragments :: table-actions-simple(@{/items/{id}/update(id=${item.id})}, @{/items/{id}/delete(id=${item.id})})">
+                </th:block>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
 </body>
 </html>

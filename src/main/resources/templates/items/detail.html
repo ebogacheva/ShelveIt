@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>ShelveIt - Item Details</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div th:replace="fragments :: header"></div>
+
+<div class="container">
+
+    <h1>Item details</h1>
+
+    <div th:replace="fragments :: navigation-blocks"></div>
+
+    <!-- Details Section -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div style="flex: 1;">
+                <p>
+                    <strong>ID:</strong> <span th:text="${item.id}"></span>
+                    <strong>Name:</strong> <span th:text="${item.name}"></span>
+                    <strong>Storage:</strong> 
+                    <a th:href="@{/storages/{id}(id=${item.storage.id})}"
+                       th:text="${item.storage.name} + ' (ID: ' + ${item.storage.id} + ')'"></a>
+                    <strong>Keywords:</strong> <span th:text="${#strings.listJoin(item.keywords, ', ')}"></span>
+                </p>
+            </div>
+            <div style="display: flex; gap: 10px; margin-left: 20px;">
+                <button onclick="location.href='/items/{id}/update'" th:onclick="'location.href=\'/items/' + ${item.id} + '/update\''" class="btn" style="background-color: #6c8b6f; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-weight: bold;">Update</button>
+                <form th:action="@{/items/{id}/delete(id=${item.id})}" method="post" style="display: inline;">
+                    <button type="submit" class="btn" style="background-color: #6c8b6f; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-weight: bold;">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Storage Hierarchy and Near Items Section -->
+    <div class="flex-container" style="margin-top: 20px;">
+        <!-- Storage Hierarchy Block -->
+        <div class="card">
+            <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 10px;">
+                <h2 style="font-size: 18px; margin: 0; margin-right: auto;">Storage Hierarchy</h2>
+            </div>
+            <div th:if="${storageHierarchyIds != null and !storageHierarchyIds.isEmpty()}">
+                <p style="margin-bottom: 10px;"><strong>Storage Hierarchy Path:</strong></p>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+                    <span th:each="storageId, iterStat : ${storageHierarchyIds}">
+                        <a th:href="@{/storages/{id}(id=${storageId})}" 
+                           th:text="${storageId}"
+                           style="color: #6c8b6f; text-decoration: none; font-weight: bold;"></a>
+                        <span th:if="${!iterStat.last}" style="margin: 0 5px; color: #666;">→</span>
+                    </span>
+                </div>
+            </div>
+            <div th:if="${storageHierarchyIds == null or storageHierarchyIds.isEmpty()}">
+                <p style="color: #666; font-style: italic;">No storage hierarchy information available.</p>
+            </div>
+        </div>
+
+        <!-- Near Items Block -->
+        <div class="card">
+            <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 10px;">
+                <h2 style="font-size: 18px; margin: 0; margin-right: auto;">Items in Same Storage</h2>
+            </div>
+            <table th:if="${nearItems != null and !nearItems.isEmpty()}">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Keywords</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="nearItem : ${nearItems}">
+                    <td>
+                        <a th:href="@{/items/{id}(id=${nearItem.id})}"
+                           th:text="${nearItem.id}"></a>
+                    </td>
+                    <td th:text="${nearItem.name}"></td>
+                    <td th:text="${#strings.listJoin(nearItem.keywords, ', ')}"></td>
+                    <td>
+                        <button onclick="location.href='/items/{id}/update'" th:onclick="'location.href=\'/items/' + ${nearItem.id} + '/update\''">Update</button>
+                        <form th:action="@{/items/{id}/delete(id=${nearItem.id})}" method="post" style="display: inline;">
+                            <button type="submit">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <div th:if="${nearItems == null or nearItems.isEmpty()}">
+                <p style="color: #666; font-style: italic;">No other items found in the same storage.</p>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

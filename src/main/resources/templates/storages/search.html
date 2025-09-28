@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>ShelveIt - Search Storages</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div th:replace="fragments :: header"></div>
+
+<div class="container">
+    <h1>Search Storages</h1>
+
+    <div th:replace="fragments :: navigation-blocks"></div>
+
+    <!-- Search Form Section -->
+    <div class="flex-container">
+        <!-- Search Form Block -->
+        <div class="card search-form">
+            <h2>Search Storages</h2>
+            <form action="/storages/search" method="post">
+                <div class="form-row">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" 
+                           th:value="${searchName}" 
+                           placeholder="Enter partial storage name (case-insensitive)">
+                </div>
+                
+                <div class="form-row">
+                    <label for="type">Type:</label>
+                    <select id="type" name="type">
+                        <option value="">All Types</option>
+                        <option th:each="storageType : ${storageTypes}" 
+                                th:value="${storageType}" 
+                                th:text="${storageType}"
+                                th:selected="${searchType == storageType}"></option>
+                    </select>
+                </div>
+                
+                <div class="search-help">
+                    <strong>Search Tips:</strong><br>
+                    • Name search: Partial, case-insensitive match on storage name<br>
+                    • Type filter: Select a specific storage type to narrow results<br>
+                    • Leave name empty and select a type to see all storages of that type<br>
+                    • Leave both fields empty to see all storages
+                </div>
+                
+                <div class="search-actions">
+                    <button type="submit">Search</button>
+                    <button type="button" onclick="clearSearchForm()">Clear</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Empty Block -->
+        <div class="card blank-card">
+        </div>
+    </div>
+
+    <!-- Search Results -->
+    <div class="results-section" th:if="${results != null}">
+        <div class="results-count" th:if="${!results.isEmpty()}">
+            Found <span th:text="${results.size()}">0</span> storage(s) matching your criteria.
+        </div>
+        
+        <div class="results-count" th:if="${results.isEmpty()}">
+            No storages found matching your search criteria.
+        </div>
+
+        <table th:if="${!results.isEmpty()}">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Parent</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="storage : ${results}">
+                <td>
+                    <a th:href="@{/storages/{id}(id=${storage.id})}"
+                       th:text="${storage.id}"></a>
+                </td>
+                <td th:text="${storage.name}"></td>
+                <td th:text="${storage.type}"></td>
+                <td>
+                    <!-- Parent ID as a clickable link -->
+                    <a th:if="${storage.parentId != null}"
+                       th:href="@{/storages/{id}(id=${storage.parentId})}"
+                       th:text="${storage.parentId}"></a>
+                    <span th:if="${storage.parentId == null}">No Parent</span>
+                </td>
+                <td>
+                    <th:block th:replace="fragments :: table-actions-simple(@{/storages/{id}/update(id=${storage.id})}, @{/storages/{id}/delete(id=${storage.id})})">
+                    </th:block>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="no-results" th:if="${results.isEmpty()}">
+            <p>Try adjusting your search criteria or use different filters.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+function clearSearchForm() {
+    document.getElementById('name').value = '';
+    document.getElementById('type').value = '';
+}
+</script>
+</body>
+</html>

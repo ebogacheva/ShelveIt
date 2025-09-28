@@ -4,6 +4,39 @@
     <title>Fragments</title>
 </head>
 <body>
+
+<!-- Base Layout Fragment -->
+<div th:fragment="layout(title, content)">
+    <!DOCTYPE html>
+    <html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title th:text="'ShelveIt - ' + ${title}">ShelveIt</title>
+        <link rel="stylesheet" href="/css/styles.css">
+    </head>
+    <body>
+        <div th:replace="fragments :: header"></div>
+        
+        <div class="container">
+            <div th:replace="${content}"></div>
+        </div>
+    </body>
+    </html>
+</div>
+
+
+<!-- Header with Title and Home Button -->
+<div th:fragment="header">
+    <header style="display: flex; justify-content: space-between; align-items: center; padding: 20px; background-color: #fff; border-bottom: 1px solid #ddd;">
+        <h1 style="margin: 0; font-size: 24px; font-weight: bold;">ShelveIt Project - Keeping an eye on your things!</h1>
+        <button onclick="location.href='/'" 
+                class="header-home-button" 
+                style="background-color: #6c8b6f; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px; margin: 0; flex: none; width: auto; display: inline-block;"
+                onmouseover="this.style.backgroundColor='#5a7261'"
+                onmouseout="this.style.backgroundColor='#6c8b6f'">
+            Home
+        </button>
+    </header>
+</div>
 <!-- Storages Block -->
 <div th:fragment="storages">
     <div class="card">
@@ -30,6 +63,75 @@
             <button onclick="location.href='/items'">List</button>
             <button onclick="location.href='/items/create'">Create</button>
             <button onclick="location.href='/items/search'">Search</button>
+        </div>
+    </div>
+</div>
+
+<!-- Table Action Buttons -->
+<div th:fragment="table-actions-update-delete(updateUrl, deleteUrl, entityId)">
+    <button th:onclick="'location.href=\'' + ${updateUrl} + '\''" class="btn" style="background-color: #6c8b6f; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-weight: bold;">Update</button>
+    <form th:action="${deleteUrl}" method="post" style="display: inline;">
+        <button type="submit" class="btn" style="background-color: #6c8b6f; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-weight: bold;">Delete</button>
+    </form>
+</div>
+
+<!-- Simple Table Action Buttons -->
+<div th:fragment="table-actions-simple(updateUrl, deleteUrl)">
+    <a th:href="${updateUrl}" style="background-color: #6c8b6f; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; text-decoration: none; margin-right: 5px; text-transform: uppercase; font-weight: bold; font-size: 14px; display: inline-block;" onmouseover="this.style.backgroundColor='#5a7261'" onmouseout="this.style.backgroundColor='#6c8b6f'">Update</a>
+    <form th:action="${deleteUrl}" method="post" style="display: inline;">
+        <button type="submit" style="background-color: #6c8b6f; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px;" onmouseover="this.style.backgroundColor='#5a7261'" onmouseout="this.style.backgroundColor='#6c8b6f'">Delete</button>
+    </form>
+</div>
+
+<!-- Form Field Fragment -->
+<div th:fragment="form-field(label, inputType, name, placeholder, value, helpText)">
+    <div>
+        <label th:for="${name}"><strong th:text="${label}">Label:</strong></label>
+        <input th:type="${inputType}" th:id="${name}" th:name="${name}" th:placeholder="${placeholder}" th:value="${value}">
+        <div th:if="${helpText != null}" th:text="${helpText}" class="keywords-help"></div>
+    </div>
+</div>
+
+<!-- Form Field Fragment with Required Support -->
+<div th:fragment="form-field-required(label, inputType, name, placeholder, value, helpText, required)">
+    <div>
+        <label th:for="${name}"><strong th:text="${label}">Label:</strong></label>
+        <input th:type="${inputType}" th:id="${name}" th:name="${name}" th:placeholder="${placeholder}" th:value="${value}" th:required="${required}">
+        <div th:if="${helpText != null}" th:text="${helpText}" class="keywords-help"></div>
+    </div>
+</div>
+
+<!-- Simple Back Navigation for Create/Update Pages -->
+<div th:fragment="back-navigation(listUrl)">
+    <div style="margin-bottom: 20px;">
+        <button onclick="location.href='[[${listUrl}]]'" style="background-color: #6c8b6f; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 14px;">← Back to List</button>
+    </div>
+</div>
+
+<!-- Combined Navigation Blocks -->
+<div th:fragment="navigation-blocks">
+    <div class="flex-container">
+        <div class="card">
+            <h2>Storages</h2>
+            <p>Residence: Root storage, no parent.<br>
+                Room: Can have Residence as parent, may include Furniture, Units, and Items directly.<br>
+                Furniture: Can have Residence or Room as parent, may include Units and Items.<br>
+                Unit: Can have any storage as parent, may include only Items.</p>
+            <div class="actions">
+                <button onclick="location.href='/storages'">List</button>
+                <button onclick="location.href='/storages/create'">Create</button>
+                <button onclick="location.href='/storages/search'">Search</button>
+            </div>
+        </div>
+        <div class="card">
+            <h2>Items</h2>
+            <p>Items can be stored in any storage type.<br>
+                Items may have keywords for easier searching.</p>
+            <div class="actions">
+                <button onclick="location.href='/items'">List</button>
+                <button onclick="location.href='/items/create'">Create</button>
+                <button onclick="location.href='/items/search'">Search</button>
+            </div>
         </div>
     </div>
 </div>

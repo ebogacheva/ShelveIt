@@ -5,57 +5,38 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-<header>
-    <h1>ShelveIt Project - Keeping an eye on your things!</h1>
-</header>
+<div th:replace="fragments :: header"></div>
 
 <div class="container">
-    <!-- Main Header -->
     <h1>Storage details</h1>
 
-    <div class="flex-container">
-        <!-- Storages Block -->
-        <div class="card">
-            <h2>Storages</h2>
-            <p>Residence: Root storage, no parent.<br>
-                Room: Can have Residence as parent, may include Furniture, Units, and Items directly.<br>
-                Furniture: Can have Residence or Room as parent, may include Units and Items.<br>
-                Unit: Can have any storage as parent, may include only Items.</p>
-            <div class="actions">
-                <button onclick="location.href='/storages'">List</button>
-                <button onclick="location.href='/storages/create'">Create</button>
-                <button onclick="location.href='/storages/search'">Search</button>
-            </div>
-        </div>
-
-        <!-- Items Block -->
-        <div class="card">
-            <h2>Items</h2>
-            <p>Items can be stored in any storage type.<br>
-                Items may have keywords for easier searching.</p>
-            <div class="actions">
-                <button onclick="location.href='/items'">List</button>
-                <button onclick="location.href='/items/create'">Create</button>
-                <button onclick="location.href='/items/search'">Search</button>
-            </div>
-        </div>
-    </div>
+    <div th:replace="fragments :: navigation-blocks"></div>
 
     <!-- Details Section -->
     <div class="card">
-        <p>
-            <strong>ID:</strong> <span th:text="${storage.id}"></span>
-            &nbsp;&nbsp;&nbsp;
-            <strong>Name:</strong> <span th:text="${storage.name}"></span>
-            &nbsp;&nbsp;&nbsp;
-            <strong>Type:</strong> <span th:text="${storage.type}"></span>
-            &nbsp;&nbsp;&nbsp;
-            <strong>Parent:</strong>
-            <a th:if="${storage.parentId != null}"
-               th:href="@{/storages/{id}(id=${storage.parentId})}"
-               th:text="${storage.parentId}"></a>
-            <span th:if="${storage.parentId == null}">No Parent</span>
-        </p>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div style="flex: 1;">
+                <p>
+                    <strong>ID:</strong> <span th:text="${storage.id}"></span>
+                    &nbsp;&nbsp;&nbsp;
+                    <strong>Name:</strong> <span th:text="${storage.name}"></span>
+                    &nbsp;&nbsp;&nbsp;
+                    <strong>Type:</strong> <span th:text="${storage.type}"></span>
+                    &nbsp;&nbsp;&nbsp;
+                    <strong>Parent:</strong>
+                    <a th:if="${storage.parentId != null}"
+                       th:href="@{/storages/{id}(id=${storage.parentId})}"
+                       th:text="${storage.parentId}"></a>
+                    <span th:if="${storage.parentId == null}">No Parent</span>
+                </p>
+            </div>
+            <div style="display: flex; gap: 10px; margin-left: 20px;">
+                <button onclick="location.href='/storages/{id}/update'" th:onclick="'location.href=\'/storages/' + ${storage.id} + '/update\''" class="btn" style="background-color: #6c8b6f; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-weight: bold;">Update</button>
+                <form th:action="@{/storages/{id}/delete(id=${storage.id})}" method="post" style="display: inline;">
+                    <button type="submit" class="btn" style="background-color: #6c8b6f; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-weight: bold;">Delete</button>
+                </form>
+            </div>
+        </div>
     </div>
 
     <!-- Substorages and Items Section -->
@@ -93,7 +74,9 @@
                     </td>
                     <td>
                         <button onclick="location.href='/storages/{id}/update'" th:onclick="'location.href=\'/storages/' + ${substorage.id} + '/update\''">Update</button>
-                        <button onclick="location.href='/storages/{id}/delete'" th:onclick="'location.href=\'/storages/' + ${substorage.id} + '/delete\''">Delete</button>
+                        <form th:action="@{/storages/{id}/delete(id=${substorage.id})}" method="post" style="display: inline;">
+                            <button type="submit">Delete</button>
+                        </form>
                     </td>
                 </tr>
                 </tbody>
@@ -104,7 +87,7 @@
         <div class="card">
             <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 10px;">
                 <h2 style="font-size: 18px; margin: 0; margin-right: auto;">Items</h2>
-                <button onclick="location.href='/items/create'" class="btn" style="background-color: #6c8b6f; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-weight: bold;">Create</button>
+                <button onclick="location.href='/items/create?storageId={id}'" th:onclick="'location.href=\'/items/create?storageId=' + ${storage.id} + '\''" class="btn" style="background-color: #6c8b6f; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-weight: bold;">Create</button>
             </div>
             <table>
                 <thead>
@@ -122,7 +105,9 @@
                     <td th:text="${item.keywords}"></td>
                     <td>
                         <button onclick="location.href='/items/{id}/update'" th:onclick="'location.href=\'/items/' + ${item.id} + '/update\''">Update</button>
-                        <button onclick="location.href='/items/{id}/delete'" th:onclick="'location.href=\'/items/' + ${item.id} + '/delete\''">Delete</button>
+                        <form th:action="@{/items/{id}/delete(id=${item.id})}" method="post" style="display: inline;">
+                            <button type="submit">Delete</button>
+                        </form>
                     </td>
                 </tr>
                 </tbody>

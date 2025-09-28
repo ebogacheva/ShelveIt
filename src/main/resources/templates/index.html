@@ -1,4 +1,3 @@
-html
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -6,41 +5,13 @@ html
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-<header>
-    <h1>ShelveIt Project - Keeping an eye on your things!</h1>
-</header>
+<div th:replace="fragments :: header"></div>
 
 <div class="container">
     <h1>Welcome to ShelveIt!</h1>
     <p>Manage your storages and items effortlessly.</p>
 
-    <div class="flex-container">
-        <!-- Storages Block -->
-        <div class="card">
-            <h2>Storages</h2>
-            <p>Residence: Root storage, no parent.<br>
-                Room: Can have Residence as parent, may include Furniture, Units, and Items directly.<br>
-                Furniture: Can have Residence or Room as parent, may include Units and Items.<br>
-                Unit: Can have any storage as parent, may include only Items.</p>
-            <div class="actions">
-                <button onclick="location.href='/storages'">List</button>
-                <button onclick="location.href='/storages/create'">Create</button>
-                <button onclick="location.href='/storages/search'">Search</button>
-            </div>
-        </div>
-
-        <!-- Items Block -->
-        <div class="card">
-            <h2>Items</h2>
-            <p>Items can be stored in any storage type.<br>
-                Items may have keywords for easier searching.</p>
-            <div class="actions">
-                <button onclick="location.href='/items'">List</button>
-                <button onclick="location.href='/items/create'">Create</button>
-                <button onclick="location.href='/items/search'">Search</button>
-            </div>
-        </div>
-    </div>
+    <div th:replace="fragments :: navigation-blocks"></div>
 </div>
 </body>
 </html>
