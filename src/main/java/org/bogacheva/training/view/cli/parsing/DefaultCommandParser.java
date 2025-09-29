@@ -6,9 +6,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Default implementation of CommandParser.
- */
+
 @Component
 public class DefaultCommandParser implements CommandParser {
     
@@ -19,8 +17,8 @@ public class DefaultCommandParser implements CommandParser {
         String[] parts = splitInParts(input);
         String commandType = parseCommandType(parts);
         
-        // Special handling for help command 
-        if ("help".equals(commandType)) {
+        // Special handling for help and exit commands 
+        if ("help".equals(commandType) || "exit".equals(commandType)) {
             return new ParsedCommand(commandType, parts, Collections.emptyMap());
         }
         
@@ -53,11 +51,12 @@ public class DefaultCommandParser implements CommandParser {
             return "broken";
         }
         if (parts.length == 1) {
-            return parts[0].toLowerCase();
-        }
-  
-        if ("help".equals(parts[0].toLowerCase())) {
-            return "help";
+            String command = parts[0].toLowerCase();
+            // Special handling for single-word commands
+            if ("help".equals(command) || "exit".equals(command)) {
+                return command;
+            }
+            return command;
         }
         String cmdCandidate = (parts[0] + " " + parts[1]).toLowerCase();
         return getCommandType(parts, cmdCandidate);

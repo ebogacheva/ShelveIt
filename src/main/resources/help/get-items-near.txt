@@ -1,0 +1,16 @@
+GET ITEMS NEAR
+
+Description: List items located near a given item
+
+Usage: get items near --id <itemId>
+
+Required Options:
+    --id <itemId>    Reference item ID (numeric)
+
+Returns:
+    - List of items in the same storage as the reference item
+    - Excludes the reference item itself
+
+Examples:
+    get items near --id 25
+    get items near --id 100

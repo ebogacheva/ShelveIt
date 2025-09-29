@@ -1,0 +1,16 @@
+TRACK STORAGES
+
+Description: Show the complete storage hierarchy path for an item
+
+Usage: track storages --id <itemId>
+
+Required Options:
+    --id <itemId>    Item ID to track (numeric)
+
+Returns:
+    - Complete hierarchy path from root storage to item location
+    - Shows storage IDs in order from top-level to item location
+
+Examples:
+    track storages --id 25
+    track storages --id 100

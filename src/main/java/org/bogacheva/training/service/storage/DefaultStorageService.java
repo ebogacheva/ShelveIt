@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -168,9 +169,20 @@ public class DefaultStorageService implements StorageService {
     @Transactional(readOnly = true)
     public List<StorageDTO> searchByNameAndType(String name, StorageType type) {
         log.debug("Searching storages by name '{}' and type {}", name, type);
-        List<Storage> storages = (type == null)
-                ? storageRepo.findByNameContainingIgnoreCase(name)
-                : storageRepo.findByNameContainingIgnoreCaseAndType(name, type);
+    
+        if ((name == null || name.trim().isEmpty()) && type == null) {
+            return Collections.emptyList();
+        }
+        
+        List<Storage> storages;
+        if (type == null) {
+            storages = storageRepo.findByNameContainingIgnoreCase(name);
+        } else if (name == null || name.trim().isEmpty()) {
+            storages = storageRepo.findByType(type);
+        } else {
+            storages = storageRepo.findByNameContainingIgnoreCaseAndType(name, type);
+        }
+        
         return storageMapper.toDTOList(storages);
     }
 
@@ -178,17 +190,6 @@ public class DefaultStorageService implements StorageService {
         return storageRepo.findById(id)
                 .orElseThrow(() -> new StorageNotFoundException(id));
     }
-
-//    private Storage getTargetStorage(Storage storageToDelete, Long targetStorageId) {
-//        boolean isResidence = storageToDelete.getType() == StorageType.RESIDENCE;
-//        if (isResidence && targetStorageId == null) {
-//            throw new IllegalArgumentException("RESIDENCE storage must specify a target storage for contents");
-//        }
-//        if (targetStorageId != null) {
-//            return findStorageByIdOrThrow(targetStorageId);
-//        }
-//        return storageToDelete.getParent();
-//    }
 
     private Storage buildStorageFromDTO(StorageCreateDTO dto) {
         Storage parent = dto.getParentId() != null
@@ -226,30 +227,4 @@ public class DefaultStorageService implements StorageService {
         }
     }
 
-    // TODO: Implement moveContents method to handle moving items and sub-storages
-//    private void moveItems(Storage from, Storage to) {
-//        moveElements(
-//                from.getItems(),
-//                to.getItems(),
-//                item -> item.setStorage(to)
-//        );
-//    }
-//
-//    private void moveSubStorages(Storage from, Storage to) {
-//        moveElements(
-//                from.getSubStorages(),
-//                to.getSubStorages(),
-//                subStorage -> subStorage.setParent(to)
-//        );
-//    }
-//
-//    private <T> void moveElements(List<T> fromList, List<T> toList, Consumer<T> reassignParent) {
-//
-//        List<T> elementsToMove = new ArrayList<>(fromList);
-//        for (T element : elementsToMove) {
-//            reassignParent.accept(element);
-//            toList.add(element);
-//        }
-//        fromList.clear();
-//    }
 }

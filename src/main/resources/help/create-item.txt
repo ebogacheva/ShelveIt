@@ -1,0 +1,27 @@
+CREATE ITEM
+
+Description: Create a new item with specified name and storage location
+
+Usage: create item --name <name> --storage <storageId> [--keywords <keyword1,keyword2,...>]
+
+Required Options:
+    --name <name>         Item name (letters, numbers, spaces allowed)
+    --storage <storageId> Storage ID where item will be placed (numeric)
+
+Optional Options:
+    --keywords <keywords> Comma-separated list of keywords
+
+Name Rules:
+    - May contain letters, numbers, and spaces
+    - Wrap in quotation marks if contains spaces or special characters
+    - Examples: "My Book", "Red Shirt", "Gaming Laptop"
+
+Keywords Rules:
+    - Comma-separated list of keywords
+    - Spaces between keywords are optional
+    - Examples: "book,reading,novel" or "book, reading, novel"
+
+Examples:
+    create item --name "Programming Book" --storage 5 --keywords "book,programming,tech"
+    create item --name "Coffee Mug" --storage 10 --keywords "kitchen,drink,ceramic"
+    create item --name "Laptop" --storage 15

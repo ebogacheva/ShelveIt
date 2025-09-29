@@ -1,7 +1,6 @@
 package org.bogacheva.training.domain.storage;
 
 import org.bogacheva.training.service.storage.strategies.*;
-import org.springframework.stereotype.Component;
 
 import java.util.EnumMap;
 import java.util.Map;

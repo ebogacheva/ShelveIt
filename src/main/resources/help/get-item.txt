@@ -1,0 +1,16 @@
+GET ITEM
+
+Description: Get detailed information about an item
+
+Usage: get item --id <itemId>
+
+Required Options:
+    --id <itemId>    Item ID to retrieve (numeric)
+
+Returns:
+    - Item details (ID, name, keywords)
+    - Storage location information
+
+Examples:
+    get item --id 25
+    get item --id 100

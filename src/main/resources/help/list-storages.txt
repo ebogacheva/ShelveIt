@@ -1,0 +1,10 @@
+LIST STORAGES
+
+Description: List all storages in the system
+
+Usage: list storages
+
+Options: None
+
+Example:
+    list storages

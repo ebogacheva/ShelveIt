@@ -1,0 +1,16 @@
+LIST SUB-STORAGES
+
+Description: List all sub-storages of a given storage
+
+Usage: list substorages --id <storageId>
+
+Required Options:
+    --id <storageId>  Parent storage ID (numeric)
+
+Returns:
+    - List of all direct sub-storages
+    - Does not include items, only storage containers
+
+Examples:
+    list substorages --id 5
+    list substorages --id 10

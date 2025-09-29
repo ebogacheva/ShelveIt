@@ -29,20 +29,6 @@ docker run -it --rm --network shelveit_default \
   -e SPRING_DATASOURCE_PASSWORD=dev_password \
   shelveit-app
 
-# Background mode
-docker-compose up -d --build
-
-# View logs
-docker-compose logs -f app
-
-# Attach to running container
-docker exec -it shelveit_app bash
-
-# Database only
-docker-compose up postgres
-
-# Connect to database
-docker exec -it shelveit_postgres psql -U dev_user -d shelveit_dev
 ```
 
 ## Environment Variables

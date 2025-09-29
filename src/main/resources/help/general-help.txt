@@ -1,0 +1,28 @@
+Welcome to the ShelveIt App!
+Available commands (optional parameters are given in [...] :
+
+    list storages                          - List all storages
+    list items                             - List all items
+    create storage --type <type> --name <name> [--parent <parentId>]   - Create a new storage
+    create item --name <name> --storage <storageId> [--keywords <keyword1,keyword2,...>]   
+            - Create a new item
+    remove storage --id <storageId>        - Remove a storage by its ID
+    remove item --id <itemId>              - Remove an item by its ID
+    get storage --id <storageId>           - Get storage details by ID
+    get item --id <itemId>                 - Get item details by ID
+    list substorages --id <storageId>      - List sub-storages of a given storage
+    get items by storage --id <storageId>  - List items within a given storage
+    search item [--name <name>] [--keywords <keyword1,keyword2,...>]   - Search for items
+    search storage [--name <name>] [--type <type>]                      - Search for storages
+    get items near --id <itemId>           - List items located near a given item
+    track storages --id <itemId>           - Show full storage hierarchy path for a given item
+    exit                                   - Exit the application
+    help [<command>]                       - Show this help text or help for a specific command
+
+Notes:
+    <name> may contain letters, numbers, and spaces; wrap in quotation marks if it 
+    contains spaces or special characters (e.g., "box with buttons").
+    <keywords> is a comma-separated list. Spaces between keywords are optional 
+    (e.g., book,reading,novel or book, reading, novel).
+    <type> is one of: RESIDENCE, ROOM, FURNITURE, UNIT.
+    <parentId>, <storageId>, <itemId> are numeric IDs.

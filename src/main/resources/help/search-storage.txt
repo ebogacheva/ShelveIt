@@ -1,0 +1,19 @@
+SEARCH STORAGE
+
+Description: Search for storages by name or type
+
+Usage: search storage [--name <name>] [--type <type>]
+
+Options (at least one required):
+    --name <name>         Partial storage name (case-insensitive)
+    --type <type>         Storage type (RESIDENCE, ROOM, FURNITURE, UNIT)
+
+Search Rules:
+    - Name search: Partial, case-insensitive match
+    - Type search: Exact match for storage type
+    - Both options can be used together for more specific results
+
+Examples:
+    search storage --name room
+    search storage --type ROOM
+    search storage --name living --type ROOM

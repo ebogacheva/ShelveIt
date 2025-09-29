@@ -1,0 +1,18 @@
+SEARCH ITEM
+
+Description: Search for items by name or keywords
+
+Usage: search item [--name <name>] [--keywords <keyword1,keyword2,...>]
+
+Options (at least one required):
+    --name <name>         Partial item name (case-insensitive)
+    --keywords <keywords> Comma-separated list of keywords
+
+Search Rules:
+    - Name search: Partial, case-insensitive match
+    - Keywords: Items must contain at least one of the specified keywords
+
+Examples:
+    search item --name "book"
+    search item --keywords "programming,tech"
+    search item --name "laptop" --keywords "gaming,computer"

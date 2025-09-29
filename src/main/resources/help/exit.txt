@@ -1,0 +1,10 @@
+EXIT
+
+Description: Exit the application
+
+Usage: exit
+
+Options: None
+
+Example:
+    exit

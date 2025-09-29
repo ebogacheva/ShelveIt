@@ -1,0 +1,16 @@
+REMOVE STORAGE
+
+Description: Remove a storage by its ID
+
+Usage: remove storage --id <storageId>
+
+Required Options:
+    --id <storageId>  Storage ID to remove (numeric)
+
+Important Notes:
+    - This will also remove all sub-storages and items within this storage
+    - This action cannot be undone
+
+Examples:
+    remove storage --id 5
+    remove storage --id 10

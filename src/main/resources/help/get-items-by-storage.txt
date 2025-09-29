@@ -1,0 +1,16 @@
+GET ITEMS BY STORAGE
+
+Description: List all items within a specific storage
+
+Usage: get items by storage --id <storageId>
+
+Required Options:
+    --id <storageId>  Storage ID to search in (numeric)
+
+Returns:
+    - List of all items directly in this storage
+    - Does not include items in sub-storages
+
+Examples:
+    get items by storage --id 5
+    get items by storage --id 10

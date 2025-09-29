@@ -99,7 +99,7 @@ public class StorageRestController {
 
     @GetMapping("/search")
     public ResponseEntity<List<StorageDTO>> searchStorages(
-            @RequestParam String name,
+            @RequestParam(required = false) String name,
             @RequestParam(required = false) StorageType type) {
         List<StorageDTO> storages = storageService.searchByNameAndType(name, type);
         return ResponseEntity.ok(storages);

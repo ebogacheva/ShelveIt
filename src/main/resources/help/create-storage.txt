@@ -1,0 +1,31 @@
+CREATE STORAGE
+
+Description: Create a new storage with specified type and name
+
+Usage: create storage --type <type> --name <name> [--parent <parentId>]
+
+Required Options:
+    --type <type>     Storage type (RESIDENCE, ROOM, FURNITURE, UNIT)
+    --name <name>     Storage name (letters, numbers, spaces allowed)
+
+Optional Options:
+    --parent <parentId>   Parent storage ID (numeric). 
+
+    RESIDENCE storage should not have a parent. 
+    ROOM, FURNITURE, UNIT storage should have a parent.
+
+Name Rules:
+    - May contain letters, numbers, and spaces
+    - Wrap in quotation marks if contains spaces or special characters
+    - Examples: "My Room", "Living Room", "Storage Box"
+
+Type Options:
+    - RESIDENCE: Top-level storage (house, apartment)
+    - ROOM: Room within a residence
+    - FURNITURE: Furniture within a room
+    - UNIT: Storage unit within furniture
+
+Examples:
+    create storage --type ROOM --name "Living Room"
+    create storage --type FURNITURE --name "Bookshelf" --parent 5
+    create storage --type UNIT --name "Top Shelf" --parent 10

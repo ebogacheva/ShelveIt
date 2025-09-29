@@ -1,0 +1,17 @@
+GET STORAGE
+
+Description: Get detailed information about a storage
+
+Usage: get storage --id <storageId>
+
+Required Options:
+    --id <storageId>  Storage ID to retrieve (numeric)
+
+Returns:
+    - Storage details (ID, name, type, parent)
+    - List of sub-storages
+    - List of items in this storage
+
+Examples:
+    get storage --id 5
+    get storage --id 10

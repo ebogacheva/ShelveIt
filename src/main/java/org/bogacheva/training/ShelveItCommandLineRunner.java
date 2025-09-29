@@ -46,7 +46,7 @@ public class ShelveItCommandLineRunner implements CommandLineRunner {
                 BaseCommand command = translator.translate(userInput);
                 CommandExecutionResult result = commandExecutor.execute(command);
                 outputFormatter.formatAndDisplay(result);
-                exitRequested = result.shouldExit();
+                exitRequested = result.isShouldExit();
                 
             } catch (Exception e) {
                 shelveItView.printError(e.getMessage());
@@ -54,6 +54,8 @@ public class ShelveItCommandLineRunner implements CommandLineRunner {
         } while (!exitRequested);
         
         shelveItView.printExit();
+
+        System.exit(0);
     }
 
 }

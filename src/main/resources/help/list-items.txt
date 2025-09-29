@@ -1,0 +1,10 @@
+LIST ITEMS
+
+Description: List all items in the system
+
+Usage: list items
+
+Options: None
+
+Example:
+    list items

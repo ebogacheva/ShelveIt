@@ -10,6 +10,7 @@ public enum CommandType {
     LIST_SUBSTORAGES,
     GET_ITEMS_BY_STORAGE,
     SEARCH_ITEM,
+    SEARCH_STORAGE,
     GET_ITEM,
     GET_STORAGE,
     GET_ITEMS_NEAR,

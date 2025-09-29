@@ -29,6 +29,7 @@ public class DefaultCommandFactory implements CommandFactory {
             case "get item" -> createGetItemByIdCommand(args);
             case "get storage" -> createGetStorageByIdCommand(args);
             case "search item" -> createSearchItemCommand(args);
+            case "search storage" -> createSearchStorageCommand(args);
             case "list storages" -> new ListStoragesCommand();
             case "list items" -> new ListItemsCommand();
             case "list substorages" -> createListSubStoragesCommand(args);
@@ -89,6 +90,12 @@ public class DefaultCommandFactory implements CommandFactory {
         String name = args.getOrDefault("name", null);
         List<String> keywords = args.containsKey("keywords") ? parseKeywords(args.get("keywords")) : Collections.emptyList();
         return new SearchItemCommand(name, keywords);
+    }
+    
+    private BaseCommand createSearchStorageCommand(Map<String, String> args) {
+        String name = args.getOrDefault("name", null);
+        StorageType type = args.containsKey("type") ? StorageType.of(args.get("type").toUpperCase()) : null;
+        return new SearchStorageCommand(name, type);
     }
     
     private BaseCommand createGetItemsNearCommand(Map<String, String> args) {

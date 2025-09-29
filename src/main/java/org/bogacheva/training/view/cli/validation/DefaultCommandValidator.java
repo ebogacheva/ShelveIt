@@ -7,9 +7,6 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-/**
- * Default implementation of CommandValidator.
- */
 @Component
 public class DefaultCommandValidator implements CommandValidator {
     
@@ -28,6 +25,7 @@ public class DefaultCommandValidator implements CommandValidator {
                  "list substorages", "get items by storage", "get items near", 
                  "track storages" -> validateRequiredArgs(args, "id");
             case "search item" -> validateSearchItem(args);
+            case "search storage" -> validateSearchStorage(args);
             case "list storages", "list items", "exit", "help" -> {
                 // No validation needed for these commands
             }
@@ -62,6 +60,15 @@ public class DefaultCommandValidator implements CommandValidator {
         }
         if (args.isEmpty()) {
             throw new IllegalArgumentException("Search command requires at least one search criteria (--name or --keywords)");
+        }
+    }
+    
+    private void validateSearchStorage(Map<String, String> args) {
+        if (args.containsKey("name")) {
+            validateName(args.get("name"));
+        }
+        if (args.containsKey("type")) {
+            validateType(args.get("type"));
         }
     }
     

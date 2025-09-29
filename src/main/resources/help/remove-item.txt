@@ -1,0 +1,15 @@
+REMOVE ITEM
+
+Description: Remove an item by its ID
+
+Usage: remove item --id <itemId>
+
+Required Options:
+    --id <itemId>    Item ID to remove (numeric)
+
+Important Notes:
+    - This action cannot be undone
+
+Examples:
+    remove item --id 25
+    remove item --id 100

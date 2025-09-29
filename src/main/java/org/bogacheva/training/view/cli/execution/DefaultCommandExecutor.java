@@ -1,25 +1,18 @@
 package org.bogacheva.training.view.cli.execution;
 
+import lombok.RequiredArgsConstructor;
 import org.bogacheva.training.view.cli.commands.*;
 import org.bogacheva.training.view.cli.help.HelpTextProvider;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-/**
- * Default implementation of CommandExecutor.
- * Handles the execution logic for all command types.
- */
+@RequiredArgsConstructor
 @Component
 public class DefaultCommandExecutor implements CommandExecutor {
     
     private final ServiceCaller serviceCaller;
     private final HelpTextProvider helpTextProvider;
-    
-    public DefaultCommandExecutor(ServiceCaller serviceCaller, HelpTextProvider helpTextProvider) {
-        this.serviceCaller = serviceCaller;
-        this.helpTextProvider = helpTextProvider;
-    }
     
     @Override
     public CommandExecutionResult execute(BaseCommand command) {
@@ -28,81 +21,73 @@ public class DefaultCommandExecutor implements CommandExecutor {
         }
         
         return switch (command) {
-            case CreateItemCommand createItem -> {
-                var newItem = serviceCaller.createItem(createItem.getCreateItemDTO());
-                yield new CommandExecutionResult(List.of(newItem), false, "Created item:");
-            }
+            case CreateItemCommand cmd -> createResult(
+                List.of(serviceCaller.createItem(cmd.getCreateItemDTO())), 
+                "Created item:"
+            );
             
-            case CreateStorageCommand createStorage -> {
-                var newStorage = serviceCaller.createStorage(createStorage.getStorageCreateDTO());
-                yield new CommandExecutionResult(List.of(newStorage), false, "Created storage:");
-            }
+            case CreateStorageCommand cmd -> createResult(
+                List.of(serviceCaller.createStorage(cmd.getStorageCreateDTO())), 
+                "Created storage:"
+            );
             
-            case ListItemsCommand ignored -> {
-                var items = serviceCaller.getAllItems();
-                yield new CommandExecutionResult(items, false);
-            }
+            case ListItemsCommand ignored -> new CommandExecutionResult(serviceCaller.getAllItems(), false);
+            case ListStoragesCommand ignored -> new CommandExecutionResult(serviceCaller.getAllStorages(), false);
             
-            case ListStoragesCommand ignored -> {
-                var storages = serviceCaller.getAllStorages();
-                yield new CommandExecutionResult(storages, false);
-            }
-            
-            case RemoveItemCommand removeItem -> {
-                serviceCaller.deleteItem(removeItem.getId());
+            case RemoveItemCommand cmd -> {
+                serviceCaller.deleteItem(cmd.getId());
                 yield new CommandExecutionResult(false, "Item deleted successfully");
             }
             
-            case RemoveStorageCommand removeStorage -> {
-                serviceCaller.deleteStorage(removeStorage.getId());
+            case RemoveStorageCommand cmd -> {
+                serviceCaller.deleteStorage(cmd.getId());
                 yield new CommandExecutionResult(false, "Storage deleted successfully");
             }
             
-            case GetItemsByStorageCommand getItemsByStorage -> {
-                var items = serviceCaller.getItemsByStorageId(getItemsByStorage.getStorageId());
-                yield new CommandExecutionResult(items, false);
-            }
+            case GetItemsByStorageCommand cmd -> new CommandExecutionResult(
+                serviceCaller.getItemsByStorageId(cmd.getStorageId()), false
+            );
             
-            case ListSubStoragesCommand listSubStorages -> {
-                var subStorages = serviceCaller.getSubStorages(listSubStorages.getStorageId());
-                yield new CommandExecutionResult(subStorages, false);
-            }
+            case ListSubStoragesCommand cmd -> new CommandExecutionResult(
+                serviceCaller.getSubStorages(cmd.getStorageId()), false
+            );
             
-            case GetItemByIdCommand getItemById -> {
-                var item = serviceCaller.getItemById(getItemById.getId());
-                yield new CommandExecutionResult(List.of(item), false);
-            }
+            case GetItemByIdCommand cmd -> new CommandExecutionResult(
+                List.of(serviceCaller.getItemById(cmd.getId())), false
+            );
             
-            case GetStorageByIdCommand getStorageById -> {
-                var storage = serviceCaller.getStorageById(getStorageById.getId());
-                yield new CommandExecutionResult(List.of(storage), false);
-            }
+            case GetStorageByIdCommand cmd -> new CommandExecutionResult(
+                List.of(serviceCaller.getStorageById(cmd.getId())), false
+            );
             
-            case SearchItemCommand searchItem -> {
-                var results = serviceCaller.searchItems(searchItem.getName(), searchItem.getKeywords());
-                yield new CommandExecutionResult(results, false);
-            }
+            case SearchItemCommand cmd -> new CommandExecutionResult(
+                serviceCaller.searchItems(cmd.getName(), cmd.getKeywords()), false
+            );
             
-            case GetItemsNearCommand getItemsNear -> {
-                var items = serviceCaller.getItemsNear(getItemsNear.getItemId());
-                yield new CommandExecutionResult(items, false);
-            }
+            case SearchStorageCommand cmd -> new CommandExecutionResult(
+                serviceCaller.searchStorages(cmd.getName(), cmd.getType()), false
+            );
             
-            case TrackStoragesHierarchyCommand trackStorages -> {
-                var storageIds = serviceCaller.getStorageHierarchyIds(trackStorages.getItemId());
-                yield new CommandExecutionResult(storageIds, false);
-            }
+            case GetItemsNearCommand cmd -> new CommandExecutionResult(
+                serviceCaller.getItemsNear(cmd.getItemId()), false
+            );
             
-            case HelpCommand helpCommand -> {
-                String helpText = helpCommand.isGeneralHelp() 
+            case TrackStoragesHierarchyCommand cmd -> new CommandExecutionResult(
+                serviceCaller.getStorageHierarchyIds(cmd.getItemId()), false
+            );
+            
+            case HelpCommand cmd -> new CommandExecutionResult(false, 
+                cmd.isGeneralHelp() 
                     ? helpTextProvider.getHelpText()
-                    : helpTextProvider.getCommandHelp(helpCommand.getCommand());
-                yield new CommandExecutionResult(false, helpText);
-            }
+                    : helpTextProvider.getCommandHelp(cmd.getCommand())
+            );
             
             case ExitCommand ignored -> new CommandExecutionResult(true);
-            
             default -> new CommandExecutionResult(false, "Unknown command. Please try again.");
         };
+    }
+    
+    private CommandExecutionResult createResult(List<?> data, String message) {
+        return new CommandExecutionResult(data, false, message);
     }
 }

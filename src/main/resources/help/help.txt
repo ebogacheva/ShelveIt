@@ -1,0 +1,13 @@
+HELP
+
+Description: Show help information
+
+Usage: help [<command>]
+
+Options:
+    <command>    Optional command name for specific help
+
+Examples:
+    help                    # Show general help
+    help create storage     # Show help for create storage command
+    help search item        # Show help for search item command
