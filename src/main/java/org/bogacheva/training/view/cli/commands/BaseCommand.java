@@ -1,5 +1,8 @@
 package org.bogacheva.training.view.cli.commands;
 
+import lombok.Getter;
+
+@Getter
 public abstract class BaseCommand {
 
     private final CommandType commandType;
@@ -7,9 +10,4 @@ public abstract class BaseCommand {
     public BaseCommand(CommandType commandType) {
         this.commandType = commandType;
     }
-
-    public CommandType getCommandType() {
-        return commandType;
-    }
-
 }

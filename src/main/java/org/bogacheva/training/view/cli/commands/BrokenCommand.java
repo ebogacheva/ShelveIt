@@ -5,7 +5,7 @@ import lombok.ToString;
 
 @Getter
 @ToString
-public class BrokenCommand extends BaseCommand {
+public final class BrokenCommand extends BaseCommand {
 
     private final String errorMessage;
 

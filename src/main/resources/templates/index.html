@@ -5,13 +5,13 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-<div th:replace="fragments :: header"></div>
+<div th:replace="~{fragments :: header}"></div>
 
 <div class="container">
     <h1>Welcome to ShelveIt!</h1>
     <p>Manage your storages and items effortlessly.</p>
 
-    <div th:replace="fragments :: navigation-blocks"></div>
+    <div th:replace="~{fragments :: navigation-blocks}"></div>
 </div>
 </body>
 </html>

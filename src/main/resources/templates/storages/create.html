@@ -5,12 +5,12 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-<div th:replace="fragments :: header"></div>
+<div th:replace="~{fragments :: header}"></div>
 
 <div class="container">
     <h1>Create New Storage</h1>
 
-    <div th:replace="fragments :: navigation-blocks"></div>
+    <div th:replace="~{fragments :: navigation-blocks}"></div>
 
     <div class="flex-container">
         <!-- Create Storage Form -->
@@ -18,7 +18,7 @@
             <h2>Create Storage</h2>
             <form th:action="@{/storages}" method="post">
                 <!-- Name Field -->
-                <div th:replace="fragments :: form-field-required('Name:', 'text', 'name', 'Enter storage name', ${storage.name}, null, true)"></div>
+                <div th:replace="~{fragments :: form-field-required('Name:', 'text', 'name', 'Enter storage name', ${storage.name}, null, true)}"></div>
 
                 <!-- Type Field -->
                 <div>
@@ -32,7 +32,7 @@
                 </div>
 
                 <!-- Parent ID Field -->
-                <div th:replace="fragments :: form-field('Parent ID:', 'number', 'parentId', 'Enter parent ID (optional)', ${storage.parentId}, null)"></div>
+                <div th:replace="~{fragments :: form-field('Parent ID:', 'number', 'parentId', 'Enter parent ID (optional)', ${storage.parentId}, null)}"></div>
 
                 <!-- Save Button -->
                 <div class="actions">

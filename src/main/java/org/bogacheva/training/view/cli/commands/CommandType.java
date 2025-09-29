@@ -14,6 +14,7 @@ public enum CommandType {
     GET_STORAGE,
     GET_ITEMS_NEAR,
     TRACK_STORAGES,
+    HELP,
 
     EXIT,
     BROKEN;

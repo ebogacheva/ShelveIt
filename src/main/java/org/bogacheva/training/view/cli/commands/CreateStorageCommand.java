@@ -1,10 +1,12 @@
 package org.bogacheva.training.view.cli.commands;
 
 import lombok.Getter;
+import lombok.ToString;
 import org.bogacheva.training.domain.storage.StorageType;
 import org.bogacheva.training.service.dto.StorageCreateDTO;
 
 @Getter
+@ToString
 public final class CreateStorageCommand extends BaseCommand {
     private final String name;
     private final StorageType type;

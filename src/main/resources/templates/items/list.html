@@ -5,12 +5,12 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-<div th:replace="fragments :: header"></div>
+<div th:replace="~{fragments :: header}"></div>
 
 <div class="container">
     <h1>Items - List</h1>
 
-    <div th:replace="fragments :: navigation-blocks"></div>
+    <div th:replace="~{fragments :: navigation-blocks}"></div>
 
     <table>
         <thead>
@@ -32,7 +32,7 @@
             <td th:text="${item.storage.name}"></td>
             <td th:text="${#strings.listJoin(item.keywords, ', ')}"></td>
             <td>
-                <th:block th:replace="fragments :: table-actions-simple(@{/items/{id}/update(id=${item.id})}, @{/items/{id}/delete(id=${item.id})})">
+                <th:block th:replace="~{fragments :: table-actions-simple(@{/items/{id}/update(id=${item.id})}, @{/items/{id}/delete(id=${item.id})})}">
                 </th:block>
             </td>
         </tr>

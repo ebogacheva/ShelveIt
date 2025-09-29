@@ -1,10 +1,13 @@
 package org.bogacheva.training.view.cli.commands;
 
+import lombok.Getter;
+import lombok.ToString;
 import org.bogacheva.training.service.dto.ItemCreateDTO;
 
 import java.util.List;
 
-
+@Getter
+@ToString
 public final class CreateItemCommand extends BaseCommand {
     private final String name;
     private final Long storageId;

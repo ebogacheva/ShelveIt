@@ -5,12 +5,12 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-<div th:replace="fragments :: header"></div>
+<div th:replace="~{fragments :: header}"></div>
 
 <div class="container">
     <h1>Storages - List</h1>
 
-    <div th:replace="fragments :: navigation-blocks"></div>
+    <div th:replace="~{fragments :: navigation-blocks}"></div>
 
     <table>
         <thead>
@@ -39,7 +39,7 @@
                 <span th:if="${storage.parentId == null}">No Parent</span>
             </td>
             <td>
-                <th:block th:replace="fragments :: table-actions-simple(@{/storages/{id}/update(id=${storage.id})}, @{/storages/{id}/delete(id=${storage.id})})">
+                <th:block th:replace="~{fragments :: table-actions-simple(@{/storages/{id}/update(id=${storage.id})}, @{/storages/{id}/delete(id=${storage.id})})}">
                 </th:block>
             </td>
         </tr>

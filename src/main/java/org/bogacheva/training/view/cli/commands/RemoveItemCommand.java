@@ -1,9 +1,11 @@
 package org.bogacheva.training.view.cli.commands;
 
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
-public class RemoveItemCommand extends BaseCommand {
+@ToString
+public final class RemoveItemCommand extends BaseCommand {
 
     private final Long id;
 
