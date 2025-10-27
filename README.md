@@ -14,14 +14,37 @@ Personal inventory management application with CLI and web interfaces. Helps you
 ## Quick Start
 
 ### Docker (Recommended)
+
+The application runs in two modes: **web** and **CLI**.
+
+#### Web Mode (Default)
+Runs the Spring Boot web application with REST API and web interface.
+
 ```bash
-# Start everything
-docker-compose up --build
+# Start web mode
+docker-compose up web
 
 # Access application
 # Web: http://localhost:8080
 # Database: localhost:5432
 ```
+
+#### CLI Mode only
+Runs the command-line interface for interactive shell usage.
+
+```bash
+# Start CLI mode
+docker-compose --profile cli up cli
+```
+
+#### Both Modes
+Run both web and CLI modes simultaneously:
+
+```bash
+docker-compose --profile cli up
+```
+
+For detailed Docker setup instructions, see [Docker Setup Guide](README-Docker.md).
 
 ## Technologies
 

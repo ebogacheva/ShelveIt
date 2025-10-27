@@ -8,6 +8,7 @@ import org.bogacheva.training.view.cli.execution.CommandExecutor;
 import org.bogacheva.training.view.cli.execution.CommandExecutionResult;
 import org.bogacheva.training.view.cli.formatting.OutputFormatter;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
  * command execution. 
  */
 @Component
+@Profile("cli")
 public class ShelveItCommandLineRunner implements CommandLineRunner {
 
     private final ShelveItView shelveItView;

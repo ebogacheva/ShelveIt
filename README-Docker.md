@@ -1,47 +1,49 @@
-# Docker Setup
+# ShelveIt Docker Setup
 
-## Quick Start
+This project supports running in two different modes using Docker containers:
 
+## Web Mode (Default)
+Runs the Spring Boot web application with REST API and web interface.
+
+### To run web mode:
 ```bash
-# Start everything
-docker-compose up --build
-
-# Access application
-# Web: http://localhost:8080
-# Database: localhost:5432
-
-# Stop
-docker-compose down
+docker-compose up web
 ```
 
-## Commands
+This will:
+- Start PostgreSQL database
+- Start the web application on port 8080
+- The CLI command runner will NOT execute (only web interface available)
 
+## CLI Mode
+Runs the command-line interface for interactive shell usage.
+
+### To run CLI mode:
 ```bash
-# Web interface only (recommended)
-docker-compose up --build
-
-# Interactive CLI (requires terminal)
-docker-compose up -d postgres
-docker run -it --rm --network shelveit_default \
-  -e SPRING_PROFILES_ACTIVE=dev \
-  -e SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/shelveit_dev \
-  -e SPRING_DATASOURCE_USERNAME=dev_user \
-  -e SPRING_DATASOURCE_PASSWORD=dev_password \
-  shelveit-app
-
+docker-compose --profile cli up cli
 ```
 
-## Environment Variables
+This will:
+- Start PostgreSQL database
+- Start the CLI application
+- The web server will NOT start (only CLI interface available)
+
+## Running Both Modes Simultaneously
+You can run both web and CLI modes at the same time:
 
 ```bash
-# Database
-POSTGRES_DB=shelveit_dev
-POSTGRES_USER=dev_user
-POSTGRES_PASSWORD=dev_password
-
-# Application
-SPRING_PROFILES_ACTIVE=dev
-SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/shelveit_dev
-SPRING_DATASOURCE_USERNAME=dev_user
-SPRING_DATASOURCE_PASSWORD=dev_password
+docker-compose --profile cli up
 ```
+
+This will start:
+- PostgreSQL database
+- Web application (port 8080)
+- CLI application (interactive terminal)
+
+## Important
+
+1. **Profile-based CommandLineRunner**: The `ShelveItCommandLineRunner` now only runs when the `cli` profile is active
+2. **Separate Application Properties**: 
+   - `application-dev.properties` - for web mode
+   - `application-cli.properties` - for CLI mode (disables web server)
+3. **Docker Configuration**: Updated docker-compose.yml to properly configure different profiles for web and CLI containers

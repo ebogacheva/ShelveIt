@@ -1,4 +1,5 @@
 version: '3.9'
+
 services:
   # Database service
   postgres:
@@ -13,24 +14,38 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  # Application service
-  app:
+  # Web application service
+  web:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: shelveit_app
-    environment:
-      SPRING_PROFILES_ACTIVE: dev
+    container_name: shelveit_web
+    environment: &app_env
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/shelveit_dev
       SPRING_DATASOURCE_USERNAME: dev_user
       SPRING_DATASOURCE_PASSWORD: dev_password
+      SPRING_PROFILES_ACTIVE: dev
     ports:
       - "8080:8080"
     depends_on:
       - postgres
+    # Uses default CMD from Dockerfile which runs web mode
+
+  # CLI application service
+  cli:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shelveit_cli
+    environment:
+      <<: *app_env
+      SPRING_PROFILES_ACTIVE: cli
+    depends_on:
+      - postgres
     stdin_open: true
     tty: true
-    command: ["java", "-jar", "app.jar"]
+    command: ["--spring.profiles.active=cli"]
+    profiles: [ "cli" ]
 
 volumes:
   postgres_data:

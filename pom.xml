@@ -112,5 +112,6 @@
                 </configuration>
             </plugin>
         </plugins>
+        <finalName>ShelveIt</finalName>
     </build>
 </project>
