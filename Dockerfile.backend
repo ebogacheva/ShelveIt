@@ -1,0 +1,15 @@
+FROM maven:3.9-eclipse-temurin-21 AS build
+WORKDIR /app
+COPY pom.xml .
+COPY shelveit-backend/pom.xml ./shelveit-backend/
+COPY shelveit-cli/pom.xml ./shelveit-cli/
+COPY shelveit-web/pom.xml ./shelveit-web/
+COPY shelveit-backend/src ./shelveit-backend/src
+RUN mvn clean package -pl shelveit-backend -am -DskipTests
+
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+COPY --from=build /app/shelveit-backend/target/shelveit-backend.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
+

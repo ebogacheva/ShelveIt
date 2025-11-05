@@ -21,26 +21,30 @@ The application runs in two modes: **web** and **CLI**.
 Runs the Spring Boot web application with REST API and web interface.
 
 ```bash
-# Start web mode
+# Start web mode (includes backend and database)
 docker-compose up web
 
 # Access application
-# Web: http://localhost:8080
+# Web UI: http://localhost:8081
+# Backend API: http://localhost:8080/api
 # Database: localhost:5432
 ```
 
-#### CLI Mode only
+#### CLI Mode Only
 Runs the command-line interface for interactive shell usage.
 
 ```bash
-# Start CLI mode
+# Start CLI mode (includes backend and database, but NOT web)
 docker-compose --profile cli up cli
 ```
+
+**Note:** To interact with the CLI from another terminal window, see the [Docker Setup Guide](README-Docker.md#interacting-with-cli-from-another-terminal) for detailed instructions.
 
 #### Both Modes
 Run both web and CLI modes simultaneously:
 
 ```bash
+# Start all services (postgres, backend, web, cli)
 docker-compose --profile cli up
 ```
 

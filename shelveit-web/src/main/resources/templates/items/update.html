@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>ShelveIt - Update Item</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div th:replace="fragments :: header"></div>
+
+<div class="container">
+    <h1>Update Item</h1>
+
+    <div th:replace="~{fragments :: navigation-blocks}"></div>
+
+    <div class="flex-container">
+        <!-- Update Item Form -->
+        <div class="card form-card">
+            <h2>Update Item</h2>
+            
+            <!-- Current Item Info -->
+            <div class="current-info">
+                <strong>Current Item Information:</strong><br>
+                ID: <span th:text="${item.id}"></span> | 
+                Name: <span th:text="${item.name}"></span> | 
+                Storage: <span th:text="${item.storage.name} + ' (ID: ' + ${item.storage.id} + ')'"></span>
+            </div>
+            
+            <form th:action="@{/items/{id}/update(id=${item.id})}" method="post">
+                <!-- Name Field -->
+                <div th:replace="~{fragments :: form-field('Name:', 'text', 'name', 'Enter item name', ${item.name}, null)}"></div>
+
+                <!-- Storage ID Field -->
+                <div th:replace="~{fragments :: form-field('Storage ID:', 'number', 'storageId', 'Enter storage ID', ${item.storage.id}, null)}"></div>
+
+                <!-- Keywords Field -->
+                <div th:replace="~{fragments :: form-field('Keywords:', 'text', 'keywords', 'Enter keywords', ${#strings.listJoin(item.keywords, ', ')}, 'Separate multiple keywords with commas')}"></div>
+
+                <!-- Save Button -->
+                <div class="actions">
+                    <button type="submit">Update</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Second Blank Frame -->
+        <div class="card blank-card">
+        </div>
+    </div>
+</div>
+</body>
+</html>
