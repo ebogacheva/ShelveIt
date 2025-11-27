@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResponseErrorHandler;
 
 import java.io.IOException;
@@ -18,7 +17,6 @@ import java.net.URI;
  * Custom error handler for RestTemplate that deserializes backend error responses
  * and throws BackendException with error details.
  */
-@Component
 public class RestTemplateErrorHandler implements ResponseErrorHandler {
 
     private final ObjectMapper objectMapper;

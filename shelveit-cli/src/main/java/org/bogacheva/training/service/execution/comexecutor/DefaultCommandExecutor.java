@@ -32,8 +32,8 @@ public class DefaultCommandExecutor implements CommandExecutor {
                 "Created storage:"
             );
             
-            case ListItemsCommand ignored -> new CommandExecutionResult(serviceCaller.getAllItems(), false);
-            case ListStoragesCommand ignored -> new CommandExecutionResult(serviceCaller.getAllStorages(), false);
+            case ListItemsCommand cmd -> new CommandExecutionResult(serviceCaller.getAllItems(), false);
+            case ListStoragesCommand cmd -> new CommandExecutionResult(serviceCaller.getAllStorages(), false);
             
             case RemoveItemCommand cmd -> {
                 serviceCaller.deleteItem(cmd.getId());
@@ -83,7 +83,7 @@ public class DefaultCommandExecutor implements CommandExecutor {
                     : helpTextProvider.getCommandHelp(cmd.getCommand())
             );
             
-            case ExitCommand ignored -> new CommandExecutionResult(true);
+            case ExitCommand cmd -> new CommandExecutionResult(true);
             default -> new CommandExecutionResult(false, "Unknown command. Please try again.");
         };
     }

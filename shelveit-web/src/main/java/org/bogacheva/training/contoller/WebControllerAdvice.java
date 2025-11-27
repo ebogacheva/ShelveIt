@@ -6,6 +6,8 @@ import org.bogacheva.training.client.exception.BackendException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.time.LocalDateTime;
@@ -27,6 +29,26 @@ public class WebControllerAdvice {
         return createErrorModelAndView(
             HttpStatus.BAD_REQUEST,
             ex.getMessage(),
+            LocalDateTime.now()
+        );
+    }
+
+    @ExceptionHandler(HttpClientErrorException.class)
+    public ModelAndView handleHttpClientError(HttpClientErrorException ex) {
+        HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
+        // Try to extract message from response body, fallback to status message
+        String message = ex.getResponseBodyAsString();
+        if (message == null || message.isEmpty() || message.trim().equals("{}")) {
+            message = ex.getStatusCode().toString();
+        }
+        return createErrorModelAndView(status, message, LocalDateTime.now());
+    }
+
+    @ExceptionHandler(HttpServerErrorException.class)
+    public ModelAndView handleHttpServerError(HttpServerErrorException ex) {
+        return createErrorModelAndView(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            "An internal server error occurred. Please try again later.",
             LocalDateTime.now()
         );
     }
