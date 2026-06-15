@@ -3,6 +3,7 @@ package org.bogacheva.training.service.dto;
 import lombok.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -14,6 +15,7 @@ public class ItemDTO {
     private String name;
     private StorageDTO storage;
     private List<String> keywords;
+    private Map<String, Object> attributes;
 
     @Override
     public String toString() {

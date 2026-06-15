@@ -242,8 +242,8 @@ class DefaultItemServiceTest {
         );
 
         List<ItemDTO> expectedDtos = List.of(
-                new ItemDTO(1L, "Item 1", null, null),
-                new ItemDTO(2L, "Item 2", null, null)
+                ItemDTO.builder().id(1L).name("Item 1").build(),
+                ItemDTO.builder().id(2L).name("Item 2").build()
         );
 
         when(itemRepo.findAll()).thenReturn(items);
@@ -307,7 +307,7 @@ class DefaultItemServiceTest {
         updateDTO.setName(newName);
         updateDTO.setKeywords(newKeywords);
 
-        ItemDTO expected = new ItemDTO(itemId, newName, null, newKeywords);
+        ItemDTO expected = ItemDTO.builder().id(itemId).name(newName).keywords(newKeywords).build();
 
         when(itemRepo.findById(itemId)).thenReturn(Optional.of(existingItem));
         when(itemRepo.save(any(Item.class))).thenReturn(existingItem);

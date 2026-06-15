@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -13,4 +14,5 @@ public class ItemUpdateDTO {
     private String name;
     private List<String> keywords;
     private Long storageId;
+    private Map<String, Object> attributes;
 }

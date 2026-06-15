@@ -3,17 +3,22 @@ package org.bogacheva.training.service.testdb;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
-@Testcontainers
 public abstract class AbstractPostgresIT {
 
-    @Container
-    public static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15.3")
-            .withDatabaseName("testdb")
-            .withUsername("test")
-            .withPassword("test");
+    private static final DockerImageName PGVECTOR_IMAGE =
+            DockerImageName.parse("pgvector/pgvector:pg15").asCompatibleSubstituteFor("postgres");
+
+    public static final PostgreSQLContainer<?> postgres;
+
+    static {
+        postgres = new PostgreSQLContainer<>(PGVECTOR_IMAGE)
+                .withDatabaseName("testdb")
+                .withUsername("test")
+                .withPassword("test");
+        postgres.start();
+    }
 
     @DynamicPropertySource
     static void postgresProperties(DynamicPropertyRegistry registry) {
