@@ -28,6 +28,19 @@ Integration tests require Docker (Testcontainers spins up a PostgreSQL container
 
 Local development requires a running PostgreSQL instance matching `application-dev.properties`: `localhost:5432`, db `shelveit_dev`, user `dev_user`, password `dev_password`.
 
+## Planned changes — branch `refactor/spring-ai-pgvector`
+
+> Phase 1 — Infrastructure:
+> - Enable pgvector extension via Flyway migration
+> - Add `attributes JSONB` + `embedding vector(1536)` columns to `items`
+> - Add Spring AI dependency, configure Claude as backend
+> - Scaffold `ai` package (boundary: no direct repository access)
+> - Update `Item` entity, DTOs, and MapStruct mappers
+>
+> Phase 2 — Test, refactor, clean:
+> - Ensure full test coverage after schema changes
+> - Fix broken tests, remove dead code
+
 ## Architecture
 
 The application has two runtime modes controlled by Spring profiles:
@@ -40,6 +53,8 @@ The application has two runtime modes controlled by Spring profiles:
 `Storage` is a self-referential JPA entity forming a strict hierarchy: `RESIDENCE → ROOM → FURNITURE → UNIT`. Each `StorageType` enum value carries a `StorageTypeStrategy` that declares what types it can contain and whether it requires a parent. Hierarchy rules are enforced in `StorageValidatorService` before persistence.
 
 `Item` belongs to one `Storage` and has a list of keyword strings used for search.
+
+> **Planned (this branch):** `Item` will gain `attributes` (JSONB map for flexible per-item fields: color, brand, size, etc.) and `embedding` (pgvector column for semantic search). The `keywords` field remains for keyword search.
 
 ### CLI pipeline
 
@@ -70,6 +85,10 @@ Each aggregate has an interface + `Default*` implementation:
 - `ItemSearchService` / `DefaultItemSearchService`
 
 DTOs (`*CreateDTO`, `*UpdateDTO`, `*DTO`) are mapped to/from entities via MapStruct mappers (`ItemMapper`, `StorageMapper` + `StorageMapperHelper`).
+
+### AI module
+
+> **Planned (this branch — skeleton only):** Will live in its own `ai` package. Boundary rule: input is plain text, output is a structured result; no direct repository access — service layer interfaces only. Spring AI with Claude backend will be configured here. `FIND`/`PUT` natural language commands land in a subsequent branch.
 
 ### Testing
 
