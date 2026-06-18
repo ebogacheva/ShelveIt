@@ -100,8 +100,9 @@ public class DefaultItemService implements ItemService {
         boolean hasName = dto.getName() != null;
         boolean hasKeywords = dto.getKeywords() != null;
         boolean hasStorageId = dto.getStorageId() != null;
+        boolean hasAttributes = dto.getAttributes() != null;
 
-        if (!hasName && !hasKeywords && !hasStorageId) {
+        if (!hasName && !hasKeywords && !hasStorageId && !hasAttributes) {
             throw new IllegalArgumentException("At least one field must be provided for update.");
         }
         if (dto.getName() != null && dto.getName().trim().isEmpty()) {
@@ -113,6 +114,7 @@ public class DefaultItemService implements ItemService {
         Optional.ofNullable(dto.getName()).ifPresent(item::setName);
         Optional.ofNullable(dto.getKeywords())
                 .ifPresent(kws -> item.setKeywords(new ArrayList<>(kws)));
+        Optional.ofNullable(dto.getAttributes()).ifPresent(item::setAttributes);
         if (dto.getStorageId() != null && !dto.getStorageId().equals(item.getStorage().getId())) {
             item.setStorage(getStorageByIdOrThrow(dto.getStorageId()));
         }
