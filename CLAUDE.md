@@ -86,6 +86,12 @@ Each aggregate has an interface + `Default*` implementation:
 
 DTOs (`*CreateDTO`, `*UpdateDTO`, `*DTO`) are mapped to/from entities via MapStruct mappers (`ItemMapper`, `StorageMapper` + `StorageMapperHelper`).
 
+### `attributes` field — access by layer
+
+`attributes` (`Map<String, Object>`, stored as JSONB) is fully supported at the service and REST layers: clients can pass it in the JSON body of `POST /api/items` and `PUT /api/items/{id}`.
+
+CLI support is intentionally skipped. The field is a free-form key-value map, and expressing that in a CLI flag (e.g. `--attributes color=red,size=M`) adds parsing/validation complexity with little payoff — the AI module will infer and populate attributes from natural language input, making manual CLI entry largely unnecessary.
+
 ### AI module
 
 > **Planned (this branch — skeleton only):** Will live in its own `ai` package. Boundary rule: input is plain text, output is a structured result; no direct repository access — service layer interfaces only. Spring AI with Claude backend will be configured here. `FIND`/`PUT` natural language commands land in a subsequent branch.

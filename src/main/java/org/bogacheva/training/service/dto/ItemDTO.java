@@ -20,11 +20,12 @@ public class ItemDTO {
     @Override
     public String toString() {
         return String.format(
-                "%-8s %-20s %-18s %-20s",
+                "%-8s %-20s %-18s %-20s %-20s",
                 "id: " + id,
                 "name: " + name,
                 "storage: " + (storage != null ? storage.getId() : "-"),
-                "keywords: " + (keywords != null ? String.join(", ", keywords) : "-")
+                "keywords: " + (keywords != null ? String.join(", ", keywords) : "-"),
+                "attributes: " + (attributes != null ? attributes : "-")
         );
     }
 }
