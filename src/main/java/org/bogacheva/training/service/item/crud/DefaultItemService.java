@@ -1,7 +1,9 @@
 package org.bogacheva.training.service.item.crud;
 
+import org.bogacheva.training.ai.EmbeddingService;
 import org.bogacheva.training.exceptions.ItemNotFoundException;
 import org.bogacheva.training.exceptions.StorageNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.bogacheva.training.domain.item.Item;
 import org.bogacheva.training.domain.storage.Storage;
@@ -22,17 +24,19 @@ import java.util.stream.Collectors;
 @Service
 public class DefaultItemService implements ItemService {
 
-    
     private final ItemRepository itemRepo;
     private final StorageRepository storageRepo;
     private final ItemMapper itemMapper;
+    private final EmbeddingService embeddingService;
 
     public DefaultItemService(ItemRepository itemRepo,
                               StorageRepository storageRepo,
-                              ItemMapper itemMapper) {
+                              ItemMapper itemMapper,
+                              @Autowired(required = false) EmbeddingService embeddingService) {
         this.itemRepo = itemRepo;
         this.storageRepo = storageRepo;
         this.itemMapper = itemMapper;
+        this.embeddingService = embeddingService;
     }
 
     @Override
@@ -43,6 +47,7 @@ public class DefaultItemService implements ItemService {
         normalizeKeywords(newItem);
         newItem.setStorage(storage);
         Item savedItem = itemRepo.save(newItem);
+        computeAndSaveEmbedding(savedItem);
         return itemMapper.toDTO(savedItem);
     }
 
@@ -74,6 +79,7 @@ public class DefaultItemService implements ItemService {
         applyChanges(item, dto);
         normalizeKeywords(item);
         Item savedItem = itemRepo.save(item);
+        computeAndSaveEmbedding(savedItem);
         return itemMapper.toDTO(savedItem);
     }
 
@@ -129,5 +135,23 @@ public class DefaultItemService implements ItemService {
                     .collect(Collectors.toList());
             item.setKeywords(normalized);
         }
+    }
+
+    private void computeAndSaveEmbedding(Item item) {
+        if (embeddingService == null) return;
+        float[] vector = embeddingService.embed(buildEmbeddingText(item));
+        if (vector == null || vector.length == 0) return;
+        itemRepo.updateEmbedding(item.getId(), embeddingService.toVectorString(vector));
+    }
+
+    private String buildEmbeddingText(Item item) {
+        StringBuilder sb = new StringBuilder(item.getName());
+        boolean hasAttributes = item.getAttributes() != null && !item.getAttributes().isEmpty();
+        if (hasAttributes) {
+            item.getAttributes().forEach((k, v) -> sb.append(" ").append(k).append(":").append(v));
+        } else if (item.getKeywords() != null && !item.getKeywords().isEmpty()) {
+            sb.append(" ").append(String.join(" ", item.getKeywords()));
+        }
+        return sb.toString();
     }
 }

@@ -65,4 +65,13 @@ public interface ItemSearchService {
      * @throws InvalidItemOperationException if the item has no associated storage
      */
     List<Long> getStorageHierarchyIds(Long itemId);
+
+    /**
+     * Find items semantically nearest to the given pre-computed pgvector string.
+     *
+     * @param queryVector pgvector-formatted string e.g. "[0.1,-0.2,...]"
+     * @param limit       max number of results
+     * @return list of nearest items ordered by cosine distance
+     */
+    List<ItemDTO> findNearestItems(String queryVector, int limit);
 }

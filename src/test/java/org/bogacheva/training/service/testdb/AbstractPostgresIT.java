@@ -1,11 +1,16 @@
 package org.bogacheva.training.service.testdb;
 
+import org.bogacheva.training.ai.EmbeddingService;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 public abstract class AbstractPostgresIT {
+
+    @MockitoBean
+    protected EmbeddingService embeddingService;
 
     private static final DockerImageName PGVECTOR_IMAGE =
             DockerImageName.parse("pgvector/pgvector:pg15").asCompatibleSubstituteFor("postgres");

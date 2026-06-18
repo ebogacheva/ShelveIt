@@ -94,7 +94,33 @@ CLI support is intentionally skipped. The field is a free-form key-value map, an
 
 ### AI module
 
-> **Planned (this branch — skeleton only):** Will live in its own `ai` package. Boundary rule: input is plain text, output is a structured result; no direct repository access — service layer interfaces only. Spring AI with Claude backend will be configured here. `FIND`/`PUT` natural language commands land in a subsequent branch.
+Lives in the `ai` package. Boundary rule: input is plain text, output is a structured result; no direct repository access — service layer interfaces only. Spring AI with Claude (Anthropic) backend for chat/generation, OpenAI for embeddings (Anthropic has no embedding API).
+
+#### Keywords in AI PUT mode
+
+When the user creates an item via natural language (`put item "..."`), the AI extracts `attributes` only. `keywords` are then auto-derived by flattening the attribute values:
+
+```
+attributes: {color: red, season: winter, type: jacket}
+→ keywords:  [red, winter, jacket]
+```
+
+This keeps keywords and attributes consistent and avoids model inconsistency — if the AI were asked to produce both, "red" might appear as a keyword in one call and as `color: red` in attributes in another.
+
+> **Alternative considered (not chosen):** Define keywords as *additional search tags that don't fit as a key-value pair* (e.g. "fragile", "gift", "urgent") and have the AI extract both fields separately. Cleaner conceptually but requires the model to make judgement calls on every call — inconsistency risk remains even with a strict prompt.
+
+#### Embedding text composition
+
+`DefaultItemService` computes an embedding after every create/update via `EmbeddingService`. The text fed to the embedding model follows a strict rule:
+
+- **Attributes present** → `name + attributes` (e.g. `"Red Jacket color:red season:winter"`)
+- **No attributes** → `name + keywords` (e.g. `"Red Jacket red winter jacket"`)
+
+Keywords are excluded when attributes exist because in AI mode keywords are derived from attributes — including both would double-weight the same concepts. The rule is strict (no merging) to keep it simple; the marginal accuracy gain from merging overlapping keywords into attribute-present embeddings is not worth the complexity.
+
+#### `EmbeddingService`
+
+Wraps Spring AI's `EmbeddingModel` (OpenAI). Injected as `@Autowired(required = false)` in `DefaultItemService` — if no OpenAI key is configured, embedding computation is silently skipped and items are stored without an embedding (pre-AI mode still works). In tests, `EmbeddingService` is mocked via `@MockitoBean` in `AbstractPostgresIT`.
 
 ### Testing
 
