@@ -3,6 +3,7 @@ package org.bogacheva.training.repository.item;
 import jakarta.validation.constraints.NotNull;
 import org.bogacheva.training.domain.item.Item;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -73,4 +74,16 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
      */
     @Query("SELECT i FROM Item i WHERE LOWER(i.name) LIKE :pattern")
     List<Item> findByNameLikeIgnoreCase(@Param("pattern") String pattern);
+
+    @Modifying
+    @Query(value = "UPDATE items SET embedding = CAST(:vec AS vector) WHERE id = :id", nativeQuery = true)
+    void updateEmbedding(@Param("id") Long id, @Param("vec") String vec);
+
+    @Query(value = """
+            SELECT * FROM items
+            WHERE embedding IS NOT NULL
+            ORDER BY embedding <-> CAST(:vec AS vector)
+            LIMIT :limit
+            """, nativeQuery = true)
+    List<Item> findNearest(@Param("vec") String vec, @Param("limit") int limit);
 }

@@ -115,8 +115,8 @@ class DefaultItemSearchServiceTest {
         Item item1 = new Item("Item 1", new Storage());
         Item item2 = new Item("Item 2", new Storage());
 
-        ItemDTO dto1 = new ItemDTO(1L, "Item 1", null, null);
-        ItemDTO dto2 = new ItemDTO(2L, "Item 2", null, null);
+        ItemDTO dto1 = ItemDTO.builder().id(1L).name("Item 1").build();
+        ItemDTO dto2 = ItemDTO.builder().id(2L).name("Item 2").build();
 
         return Stream.of(
                 // Case 1: Keywords match one item

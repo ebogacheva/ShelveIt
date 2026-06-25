@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -242,8 +243,8 @@ class DefaultItemServiceTest {
         );
 
         List<ItemDTO> expectedDtos = List.of(
-                new ItemDTO(1L, "Item 1", null, null),
-                new ItemDTO(2L, "Item 2", null, null)
+                ItemDTO.builder().id(1L).name("Item 1").build(),
+                ItemDTO.builder().id(2L).name("Item 2").build()
         );
 
         when(itemRepo.findAll()).thenReturn(items);
@@ -307,7 +308,7 @@ class DefaultItemServiceTest {
         updateDTO.setName(newName);
         updateDTO.setKeywords(newKeywords);
 
-        ItemDTO expected = new ItemDTO(itemId, newName, null, newKeywords);
+        ItemDTO expected = ItemDTO.builder().id(itemId).name(newName).keywords(newKeywords).build();
 
         when(itemRepo.findById(itemId)).thenReturn(Optional.of(existingItem));
         when(itemRepo.save(any(Item.class))).thenReturn(existingItem);
@@ -406,6 +407,91 @@ class DefaultItemServiceTest {
         ItemUpdateDTO updateDTO = new ItemUpdateDTO();
 
         assertThrows(IllegalArgumentException.class, () -> itemService.update(itemId, updateDTO));
+    }
+
+    @Test
+    @DisplayName("Create item with attributes passes them through to the entity")
+    void create_whenAttributesPresent_passesAttributesToEntity() {
+        Long storageId = 1L;
+        Storage storage = new Storage();
+        storage.setId(storageId);
+        Map<String, Object> attrs = Map.of("color", "red", "size", "M");
+
+        ItemCreateDTO createDTO = new ItemCreateDTO();
+        createDTO.setName("Test Item");
+        createDTO.setStorageId(storageId);
+        createDTO.setAttributes(attrs);
+
+        Item newItem = new Item();
+        newItem.setAttributes(attrs);
+
+        ItemDTO expectedDto = new ItemDTO();
+        expectedDto.setId(1L);
+        expectedDto.setAttributes(attrs);
+
+        when(storageRepo.findById(storageId)).thenReturn(Optional.of(storage));
+        when(itemMapper.toEntity(createDTO)).thenReturn(newItem);
+        when(itemRepo.save(any(Item.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(itemMapper.toDTO(any(Item.class))).thenReturn(expectedDto);
+
+        ItemDTO result = itemService.create(createDTO);
+
+        assertEquals(attrs, result.getAttributes());
+    }
+
+    @Test
+    @DisplayName("Update item with only attributes applies them to the entity")
+    void update_withOnlyAttributes_appliesAndReturnsItem() {
+        Long itemId = 1L;
+        Map<String, Object> attrs = Map.of("brand", "Acme");
+
+        Storage storage = new Storage();
+        storage.setId(1L);
+        Item existingItem = new Item();
+        existingItem.setId(itemId);
+        existingItem.setStorage(storage);
+
+        ItemUpdateDTO updateDTO = new ItemUpdateDTO();
+        updateDTO.setAttributes(attrs);
+
+        ItemDTO expectedDto = ItemDTO.builder().id(itemId).attributes(attrs).build();
+
+        when(itemRepo.findById(itemId)).thenReturn(Optional.of(existingItem));
+        when(itemRepo.save(any(Item.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(itemMapper.toDTO(any(Item.class))).thenReturn(expectedDto);
+
+        ItemDTO result = itemService.update(itemId, updateDTO);
+
+        assertEquals(attrs, result.getAttributes());
+        verify(itemRepo).save(argThat(item -> attrs.equals(item.getAttributes())));
+    }
+
+    @Test
+    @DisplayName("Update item overwrites existing attributes with new ones")
+    void update_withNewAttributes_replacesExistingAttributes() {
+        Long itemId = 1L;
+        Map<String, Object> oldAttrs = Map.of("color", "blue");
+        Map<String, Object> newAttrs = Map.of("color", "green", "size", "L");
+
+        Storage storage = new Storage();
+        storage.setId(1L);
+        Item existingItem = new Item();
+        existingItem.setId(itemId);
+        existingItem.setStorage(storage);
+        existingItem.setAttributes(oldAttrs);
+
+        ItemUpdateDTO updateDTO = new ItemUpdateDTO();
+        updateDTO.setAttributes(newAttrs);
+
+        ItemDTO expectedDto = ItemDTO.builder().id(itemId).attributes(newAttrs).build();
+
+        when(itemRepo.findById(itemId)).thenReturn(Optional.of(existingItem));
+        when(itemRepo.save(any(Item.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(itemMapper.toDTO(any(Item.class))).thenReturn(expectedDto);
+
+        itemService.update(itemId, updateDTO);
+
+        verify(itemRepo).save(argThat(item -> newAttrs.equals(item.getAttributes())));
     }
 
     @Test

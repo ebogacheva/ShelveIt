@@ -20,6 +20,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.*;
+import java.util.Map;
 
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.jupiter.api.Assertions.*;
@@ -183,5 +184,49 @@ public class ItemIntegrationTest extends AbstractPostgresIT {
         updateDTO.setName("   ");
 
         assertThrows(IllegalArgumentException.class, () -> itemService.update(created.getId(), updateDTO));
+    }
+
+    @Test
+    @DisplayName("Create item with attributes persists them to the database")
+    void createItem_withAttributes_persistsAttributesToDb() {
+        validCreateDTO.setAttributes(Map.of("color", "red", "size", "M"));
+
+        ItemDTO created = itemService.create(validCreateDTO);
+
+        assertNotNull(created.getAttributes());
+        assertEquals("red", created.getAttributes().get("color"));
+        assertEquals("M", created.getAttributes().get("size"));
+
+        Item fromDb = itemRepo.findById(created.getId()).orElseThrow();
+        assertNotNull(fromDb.getAttributes());
+        assertEquals("red", fromDb.getAttributes().get("color"));
+    }
+
+    @Test
+    @DisplayName("Update item with attributes persists them to the database")
+    void updateItem_withAttributes_persistsAttributesToDb() {
+        ItemDTO created = itemService.create(validCreateDTO);
+
+        ItemUpdateDTO updateDTO = new ItemUpdateDTO();
+        updateDTO.setAttributes(Map.of("brand", "Acme", "weight", "1kg"));
+
+        ItemDTO updated = itemService.update(created.getId(), updateDTO);
+
+        assertNotNull(updated.getAttributes());
+        assertEquals("Acme", updated.getAttributes().get("brand"));
+
+        Item fromDb = itemRepo.findById(created.getId()).orElseThrow();
+        assertEquals("Acme", fromDb.getAttributes().get("brand"));
+    }
+
+    @Test
+    @DisplayName("Update with only attributes is accepted (does not throw)")
+    void updateItem_withOnlyAttributes_doesNotThrow() {
+        ItemDTO created = itemService.create(validCreateDTO);
+
+        ItemUpdateDTO updateDTO = new ItemUpdateDTO();
+        updateDTO.setAttributes(Map.of("note", "fragile"));
+
+        assertDoesNotThrow(() -> itemService.update(created.getId(), updateDTO));
     }
 }

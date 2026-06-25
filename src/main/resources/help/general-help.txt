@@ -16,6 +16,7 @@ Available commands (optional parameters are given in [...] :
     search storage [--name <name>] [--type <type>]                      - Search for storages
     get items near --id <itemId>           - List items located near a given item
     track storages --id <itemId>           - Show full storage hierarchy path for a given item
+    ? <description>                         - Find items by natural language description (AI)
     exit                                   - Exit the application
     help [<command>]                       - Show this help text or help for a specific command
 

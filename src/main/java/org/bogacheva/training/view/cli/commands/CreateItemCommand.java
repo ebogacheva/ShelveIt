@@ -21,6 +21,6 @@ public final class CreateItemCommand extends BaseCommand {
     }
 
     public ItemCreateDTO getCreateItemDTO() {
-        return new ItemCreateDTO(this.name, this.storageId, this.keywords);
+        return new ItemCreateDTO(this.name, this.storageId, this.keywords, null);
     }
 }

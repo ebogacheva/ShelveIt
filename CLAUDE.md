@@ -28,6 +28,22 @@ Integration tests require Docker (Testcontainers spins up a PostgreSQL container
 
 Local development requires a running PostgreSQL instance matching `application-dev.properties`: `localhost:5432`, db `shelveit_dev`, user `dev_user`, password `dev_password`.
 
+## Branch status — CLOSED
+
+Branch `refactor/spring-ai-pgvector` is closed. Development continues on `feat/web-ai-chat`.
+
+**What was built on this branch:**
+- Flyway replaces `ddl-auto=update`; `V1__full_schema.sql` creates schema from scratch
+- `attributes` (JSONB) and `embedding` (vector(1536)) columns added to `items`
+- Spring AI BOM 1.0.0; Claude (Anthropic) for chat, OpenAI for embeddings
+- `EmbeddingService` — computes and stores item embeddings on every create/update
+- `ItemSearchService.findNearestItems` — cosine similarity search via pgvector (`<->`)
+- `AiAssistant.findItems` — semantic item search from a natural language query
+- CLI `?` prefix — triggers semantic search; regular commands unchanged
+- 126 tests passing
+
+**Why stopped:** The natural next step (natural language item creation via CLI) hits a ceiling — multi-turn confirmation in a REPL is the wrong UX surface. The new direction moves AI interaction to a web chat panel with agentic tool calling, which scales to multi-user and photo input.
+
 ## Architecture
 
 The application has two runtime modes controlled by Spring profiles:
@@ -39,7 +55,7 @@ The application has two runtime modes controlled by Spring profiles:
 
 `Storage` is a self-referential JPA entity forming a strict hierarchy: `RESIDENCE → ROOM → FURNITURE → UNIT`. Each `StorageType` enum value carries a `StorageTypeStrategy` that declares what types it can contain and whether it requires a parent. Hierarchy rules are enforced in `StorageValidatorService` before persistence.
 
-`Item` belongs to one `Storage` and has a list of keyword strings used for search.
+`Item` belongs to one `Storage` and has a list of keyword strings used for search, an `attributes` map (JSONB, for flexible per-item fields: color, brand, size, etc.), and an `embedding` column (vector(1536), for semantic search via pgvector).
 
 ### CLI pipeline
 
@@ -70,6 +86,31 @@ Each aggregate has an interface + `Default*` implementation:
 - `ItemSearchService` / `DefaultItemSearchService`
 
 DTOs (`*CreateDTO`, `*UpdateDTO`, `*DTO`) are mapped to/from entities via MapStruct mappers (`ItemMapper`, `StorageMapper` + `StorageMapperHelper`).
+
+### `attributes` field — access by layer
+
+`attributes` (`Map<String, Object>`, stored as JSONB) is fully supported at the service and REST layers: clients can pass it in the JSON body of `POST /api/items` and `PUT /api/items/{id}`.
+
+CLI support is intentionally skipped. The field is a free-form key-value map, and expressing that in a CLI flag (e.g. `--attributes color=red,size=M`) adds parsing/validation complexity with little payoff — the AI module will infer and populate attributes from natural language input, making manual CLI entry largely unnecessary.
+
+### AI module
+
+Lives in the `ai` package. Boundary rule: input is plain text, output is a structured result; no direct repository access — service layer interfaces only. Spring AI with Claude (Anthropic) as the chat backend, OpenAI for embeddings (Anthropic has no embedding API).
+
+`AiAssistant` exposes one method: `findItems(String query)` — converts the query to a vector via `EmbeddingService`, then calls `ItemSearchService.findNearestItems`.
+
+#### Embedding text composition
+
+`DefaultItemService` computes an embedding after every create/update via `EmbeddingService`. The text fed to the embedding model follows a strict rule:
+
+- **Attributes present** → `name + attributes` (e.g. `"Red Jacket color:red season:winter"`)
+- **No attributes** → `name + keywords` (e.g. `"Red Jacket red winter jacket"`)
+
+Keywords are excluded when attributes exist because in AI mode keywords are derived from attributes — including both would double-weight the same concepts. The rule is strict (no merging) to keep it simple; the marginal accuracy gain from merging overlapping keywords into attribute-present embeddings is not worth the complexity.
+
+#### `EmbeddingService`
+
+Wraps Spring AI's `EmbeddingModel` (OpenAI). Injected as `@Autowired(required = false)` in `DefaultItemService` — if no OpenAI key is configured, embedding computation is silently skipped and items are stored without an embedding (pre-AI mode still works). In tests, `EmbeddingService` is mocked via `@MockitoBean` in `AbstractPostgresIT`.
 
 ### Testing
 

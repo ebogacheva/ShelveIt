@@ -82,6 +82,11 @@ public class DefaultItemSearchService implements ItemSearchService {
         return itemRepository.findStorageHierarchyIds(itemId);
     }
 
+    @Override
+    public List<ItemDTO> findNearestItems(String queryVector, int limit) {
+        return itemMapper.toDTOList(itemRepository.findNearest(queryVector, limit));
+    }
+
     private String getLikePattern(String partialName) {
         return "%" + partialName.toLowerCase() + "%";
     }
