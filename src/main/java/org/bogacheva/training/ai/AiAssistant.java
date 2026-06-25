@@ -14,9 +14,4 @@ public interface AiAssistant {
      * Find items semantically matching the natural language query.
      */
     List<ItemDTO> findItems(String query);
-
-    /**
-     * Extract structured item details from a natural language PUT description.
-     */
-    PutInterpretation interpretPut(String userInput);
 }
