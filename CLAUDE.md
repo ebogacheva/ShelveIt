@@ -28,21 +28,10 @@ Integration tests require Docker (Testcontainers spins up a PostgreSQL container
 
 Local development requires a running PostgreSQL instance matching `application-dev.properties`: `localhost:5432`, db `shelveit_dev`, user `dev_user`, password `dev_password`.
 
-## Branch status — CLOSED
+## Documentation
 
-Branch `refactor/spring-ai-pgvector` is closed. Development continues on `feat/web-ai-chat`.
-
-**What was built on this branch:**
-- Flyway replaces `ddl-auto=update`; `V1__full_schema.sql` creates schema from scratch
-- `attributes` (JSONB) and `embedding` (vector(1536)) columns added to `items`
-- Spring AI BOM 1.0.0; Claude (Anthropic) for chat, OpenAI for embeddings
-- `EmbeddingService` — computes and stores item embeddings on every create/update
-- `ItemSearchService.findNearestItems` — cosine similarity search via pgvector (`<->`)
-- `AiAssistant.findItems` — semantic item search from a natural language query
-- CLI `?` prefix — triggers semantic search; regular commands unchanged
-- 126 tests passing
-
-**Why stopped:** The natural next step (natural language item creation via CLI) hits a ceiling — multi-turn confirmation in a REPL is the wrong UX surface. The new direction moves AI interaction to a web chat panel with agentic tool calling, which scales to multi-user and photo input.
+- [Current development spec](docs/spec.md) — what is being built now and key design decisions
+- [Architecture decisions](docs/decisions/) — records of significant choices and pivots
 
 ## Architecture
 
